@@ -58,15 +58,32 @@ namespace GlassServer
             units = "knots";
             AddDef("AMBIENT WIND VELOCITY", units);
 
+            // feet/sec
+            units = "feet per second";
+            AddDef("VERTICAL SPEED", units);
+
+            // feet
+            units = "feet";
+            AddDef("RADIO HEIGHT", units);
+
             // Degrees
             units = "degrees";
             AddDef("PLANE LATITUDE", units);
             AddDef("PLANE LONGITUDE", units);
+            AddDef("AMBIENT WIND DIRECTION", units);
 
+            // Temperature
             units = "celsius";
             AddDef("AMBIENT TEMPERATURE", units);
 
-            AddDef("NUMBER OF ENGINES", "number");
+            // Number/Count
+            units = "number";
+            AddDef("NUMBER OF ENGINES", units);
+
+            // Enum
+            units = "Enum";
+            AddDef("ENGINE TYPE", units);
+              
 
             static void AddDef(string _name, string _units)
             {
