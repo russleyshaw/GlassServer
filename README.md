@@ -16,9 +16,8 @@ Request
 
 ### Setting SimData
 ```ts
-POST https://{host}/api/simdata
-BODY [
-	{"name": "LIGHT TAXI", "value": 0}
-]
+// POST https://{host}/api/simdata
+// BODY
+[ {"name": "LIGHT TAXI", "value": 0} ]
 ```
 
