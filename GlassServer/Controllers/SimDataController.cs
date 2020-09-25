@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GlassServer.Models;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -15,20 +16,43 @@ namespace GlassServer.Controllers
     public class SimDataController : ControllerBase
     {
         // GET: api/simdata
-        // BODY (application/json): ["NAME 1", "NAME 2", ...]
         [HttpGet]
-        public async Task<IEnumerable<SimDataModel>> Get([FromBody] string[] saNames)
+        [EnableCors("AllowAll")]
+        public SimDataModel[] Get([FromQuery(Name = "name")] string[] saNames)
         {
             // Request all data at once and wait until a result.
-            var results = await Task.WhenAll(saNames.Distinct().Select(async sName => {
-                return new SimDataModel {
-                    name = sName,
-                    value = await SimDataManager.RequestData(sName.Trim().ToUpper()),
-                    units = SimDataUnitMapper.FindUnits(sName)
-                };
-            }));
+            var results = saNames.Distinct().Select(sName => {
+                var def = SimDataManager.GetDefinition(sName);
 
-            return results;
+                if (def == null) return null;
+
+                return new SimDataModel {
+                    name = def.name,
+                    value = def.value,
+                    units = def.units
+                };
+            }).Where(def => def != null);
+
+            return results.ToArray();
+        }
+
+        // POST: api/simdata
+        [HttpPost]
+        [EnableCors("AllowAll")]
+        public async Task Post([FromBody] SimDataPostEntry[] entries)
+        {
+            await SimDataManager.Connect();
+
+            foreach (var entry in entries)
+            {
+                SimDataManager.RequestDataSet(entry.name, entry.value);
+            }
+        }
+
+        public class SimDataPostEntry
+        {
+            public string name { get; set; }
+            public float value { get; set; }
         }
     }
 }

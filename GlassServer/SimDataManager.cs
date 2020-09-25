@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,30 +8,7 @@ using Microsoft.FlightSimulator.SimConnect;
 
 namespace GlassServer
 {
-    public enum DEFINITION
-    {
-        Dummy = 0
-    };
 
-    public enum REQUEST
-    {
-        Dummy = 0
-    };
-
-
-    /// <summary>
-    /// SimData information to use for future requests.
-    /// </summary>
-    class SimDataRequest
-    {
-        public DEFINITION eDef = DEFINITION.Dummy;
-        public REQUEST eRequest = REQUEST.Dummy;
-
-        public string sName;
-        public double dValue;
-        public string sUnits;
-        public bool bPending = false;
-    }
 
     /// <summary>
     /// Provides managed access to SimConnect values. 
@@ -40,7 +18,9 @@ namespace GlassServer
     {
         private const int WM_USER_SIMCONNECT = 0x0402;
         private static SimConnect m_oSimConnect = null;
+
         private static bool m_bConnected = false;
+        private static Task m_tConnectTask;
 
         private static EventWaitHandle m_eMessagePump;
         private static Thread m_tMessageThread;
@@ -49,39 +29,102 @@ namespace GlassServer
         private static uint m_iCurrentDefinition = 0;
         private static uint m_iCurrentRequest = 0;
 
-        public  static Dictionary<string, SimDataRequest> m_mSimDataRequests = new Dictionary<string, SimDataRequest>();
+        public  static Dictionary<string, SimDataDef> definitions = new Dictionary<string, SimDataDef>();
 
-        public static void Connect()
+        static void PopulateDefinitions()
         {
+            Console.WriteLine("Populating definitions...");
+
+            definitions.Clear();
+
+            // Booleans
+            var units = "bool";
+            AddDef("LIGHT STROBE", units);
+            AddDef("LIGHT PANEL", units);
+            AddDef("LIGHT LANDING", units);
+            AddDef("LIGHT TAXI", units);
+            AddDef("LIGHT BEACON", units);
+            AddDef("LIGHT NAV", units);
+            AddDef("LIGHT LOGO", units);
+            AddDef("LIGHT WING", units);
+            AddDef("LIGHT CABIN", units);
+
+            AddDef("AUTOPILOT AVAILABLE", units);
+            AddDef("AUTOPILOT MASTER", units);
+
+            AddDef("IS GEAR RETRACTABLE", units);
+
+            // Knots
+            units = "knots";
+            AddDef("AMBIENT WIND VELOCITY", units);
+
+            // Degrees
+            units = "degrees";
+            AddDef("PLANE LATITUDE", units);
+            AddDef("PLANE LONGITUDE", units);
+
+            units = "celsius";
+            AddDef("AMBIENT TEMPERATURE", units);
+
+            AddDef("NUMBER OF ENGINES", "number");
+
+            static void AddDef(string _name, string _units)
+            {
+                var def = new SimDataDef(_name, _units);
+                definitions.Add(def.name, def);
+            }
+        }
+
+        public static async Task Connect()
+        {
+            if (m_tConnectTask != null)
+            {
+                await m_tConnectTask;
+                return;
+            }
+
+            m_tConnectTask = BaseConnect();
+
+            await m_tConnectTask;
+        }
+
+        private static async Task BaseConnect()
+        {
+            // Exit if already connected
+            if (m_oSimConnect != null && m_bConnected) return;
+
             Console.WriteLine("Connecting...");
+            m_eMessagePump = new EventWaitHandle(false, EventResetMode.AutoReset);
+            m_oSimConnect = new SimConnect("Glass Server", IntPtr.Zero, WM_USER_SIMCONNECT, m_eMessagePump, 0);
 
-            try
+            m_oSimConnect.OnRecvOpen += new SimConnect.RecvOpenEventHandler(SimConnect_OnRecvOpen);
+            m_oSimConnect.OnRecvQuit += new SimConnect.RecvQuitEventHandler(SimConnect_OnRecvQuit);
+            m_oSimConnect.OnRecvException += new SimConnect.RecvExceptionEventHandler(SimConnect_OnRecvException);
+            m_oSimConnect.OnRecvSimobjectDataBytype += new SimConnect.RecvSimobjectDataBytypeEventHandler(SimConnect_OnRecvSimobjectDataByType);
+
+            // TODO: A new thread might not be the modern way to do this.
+            m_tMessageThread = new Thread(new ThreadStart(MessageProcessor));
+            m_tMessageThread.IsBackground = true;
+            m_tMessageThread.Start();
+
+            // TODO: A new thread might not be the modern way to do this.
+            m_tRequestThread = new Thread(new ThreadStart(RequestProcessor));
+            m_tRequestThread.IsBackground = true;
+            m_tRequestThread.Start();
+
+            while(!m_bConnected)
             {
-                m_eMessagePump = new EventWaitHandle(false, EventResetMode.AutoReset);
-                m_oSimConnect = new SimConnect("Glass Server", IntPtr.Zero, WM_USER_SIMCONNECT, m_eMessagePump, 0);
-
-                m_oSimConnect.OnRecvOpen += new SimConnect.RecvOpenEventHandler(SimConnect_OnRecvOpen);
-                m_oSimConnect.OnRecvQuit += new SimConnect.RecvQuitEventHandler(SimConnect_OnRecvQuit);
-                m_oSimConnect.OnRecvException += new SimConnect.RecvExceptionEventHandler(SimConnect_OnRecvException);
-                m_oSimConnect.OnRecvSimobjectDataBytype += new SimConnect.RecvSimobjectDataBytypeEventHandler(SimConnect_OnRecvSimobjectDataByType);
-
-                // TODO: A new thread might not be the modern way to do this.
-                m_tMessageThread = new Thread(new ThreadStart(MessageProcessor));
-                m_tMessageThread.IsBackground = true;
-                m_tMessageThread.Start();
-
-                // TODO: A new thread might not be the modern way to do this.
-                m_tRequestThread = new Thread(new ThreadStart(RequestProcessor));
-                m_tRequestThread.IsBackground = true;
-                m_tRequestThread.Start();
-
-                // TODO: Wait until proper connection
-                Thread.Sleep(1000);
+                Console.WriteLine("Waiting to connect...");
+                await Task.Delay(1000);
             }
-            catch (COMException ex)
+
+            PopulateDefinitions();
+
+            foreach(var def in definitions.Values)
             {
-                Console.WriteLine("Connection failed: " + ex.Message);
+                RegisterDefinition(def);
             }
+           
         }
 
         public static void Disconnect()
@@ -92,6 +135,8 @@ namespace GlassServer
                 m_oSimConnect.Dispose();
                 m_oSimConnect = null;
                 m_bConnected = false;
+                m_tRequestThread.Abort();
+                m_tMessageThread.Abort();
             }
         }
 
@@ -102,31 +147,28 @@ namespace GlassServer
         /// </summary>
         /// <param name="_sName"></param>
         /// <returns></returns>
-        public static async Task<double?> RequestData(string _sName)
+        public static SimDataDef GetDefinition(string _sName)
         {
             // Try once
-            SimDataRequest result;
-            if (m_mSimDataRequests.TryGetValue(_sName, out result))
+            SimDataDef def;
+            if (definitions.TryGetValue(_sName, out def))
             {
-                return result.dValue;
-            }
+                if (!def.registered) RegisterDefinition(def);
 
-            // Not found, try adding the request
-            AddRequest(_sName, SimDataUnitMapper.FindUnits(_sName) ?? "number");
-
-            // TODO: Surely there's a better way to do this with observables?
-            // Try to get the value from store after waiting
-            for(int tries = 5; tries >= 0; tries--)
-            {
-                await Task.Delay(200);
-                if (m_mSimDataRequests.TryGetValue(_sName, out result))
-                {
-                    return result.dValue;
-                }
+                return def;
             }
 
             // Not found
             return null;
+        }
+
+        public static void RequestDataSet(string _sName, double _dValue)
+        {
+            SimDataDef def;
+            if (definitions.TryGetValue(_sName, out def) && def.registered)
+            {
+                m_oSimConnect.SetDataOnSimObject(def.eDef, SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_DATA_SET_FLAG.DEFAULT, _dValue);
+            }
         }
 
         /// <summary>
@@ -134,24 +176,18 @@ namespace GlassServer
         /// </summary>
         /// <param name="_sName"></param>
         /// <param name="_sUnits"></param>
-        private static void AddRequest(string _sName, string _sUnits)
+        private static void RegisterDefinition(SimDataDef def)
         {
-            SimDataRequest oSimDataRequest = new SimDataRequest
-            {
-                eDef = (DEFINITION)m_iCurrentDefinition,
-                eRequest = (REQUEST)m_iCurrentRequest,
-                sName = _sName,
-                sUnits = _sUnits
-            };
+            if (def.registered) return;
+            def.eDef = (DEFINITION)m_iCurrentDefinition;
+            def.eRequest = (REQUEST)m_iCurrentRequest;
 
-            m_oSimConnect.AddToDataDefinition(oSimDataRequest.eDef, oSimDataRequest.sName, oSimDataRequest.sUnits, SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            m_oSimConnect.RegisterDataDefineStruct<double>(oSimDataRequest.eRequest);
+            m_oSimConnect.AddToDataDefinition(def.eDef, def.name, def.units, SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            m_oSimConnect.RegisterDataDefineStruct<double>(def.eRequest);
+            def.registered = true;
 
-            oSimDataRequest.bPending = false;
-            m_mSimDataRequests.Add(oSimDataRequest.sName, oSimDataRequest);
-
-            ++m_iCurrentDefinition;
-            ++m_iCurrentRequest;
+            m_iCurrentDefinition++;
+            m_iCurrentRequest++;
         }
 
 
@@ -161,16 +197,21 @@ namespace GlassServer
         /// </summary>
         private static void RequestProcessor()
         {
+            while(!m_bConnected) Thread.Sleep(1000);
+
             while (true)
             {
-                foreach (var entry in m_mSimDataRequests)
+                var defs = definitions.Values.Where(def => def.registered && !def.pending);
+                foreach (var def in defs)
                 {
-                    var oSimDataRequest = entry.Value;
-
-                    if (!oSimDataRequest.bPending)
+                    try
                     {
-                        m_oSimConnect?.RequestDataOnSimObjectType(oSimDataRequest.eRequest, oSimDataRequest.eDef, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
-                        oSimDataRequest.bPending = true;
+                        m_oSimConnect?.RequestDataOnSimObjectType(def.eRequest, def.eDef, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
+                        def.pending = true;
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine("Error requesting sim object type: " + e.Message);
                     }
                 }
 
@@ -218,15 +259,15 @@ namespace GlassServer
         {
             var iRequest = data.dwRequestID;
 
-            foreach (var entry in m_mSimDataRequests)
+            foreach (var entry in definitions)
             {
                 var oSimDataRequest = entry.Value;
 
                 if (iRequest == (uint)oSimDataRequest.eRequest)
                 {
                     double dValue = (double)data.dwData[0];
-                    oSimDataRequest.dValue = dValue;
-                    oSimDataRequest.bPending = false;
+                    oSimDataRequest.value = dValue;
+                    oSimDataRequest.pending = false;
                 }
             }
         }

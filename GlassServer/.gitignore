@@ -17,3 +17,6 @@ bld/
 .vs/
 
 *.user
+
+SimConnect.dll
+SimConnect.cfg
