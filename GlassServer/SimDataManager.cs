@@ -55,6 +55,7 @@ namespace GlassServer
             AddDef("AUTOPILOT HEADING LOCK", units);
             AddDef("AUTOPILOT ALTITUDE LOCK", units);
             AddDef("AUTOPILOT ATTITUDE HOLD", units);
+            AddDef("AUTOPILOT VERTICAL HOLD", units);
 
             AddDef("IS GEAR RETRACTABLE", units);
             AddDef("GEAR HANDLE POSITION", units);
@@ -76,6 +77,7 @@ namespace GlassServer
             // feet/sec
             units = "feet per second";
             AddDef("VERTICAL SPEED", units);
+            AddDef("AUTOPILOT VERTICAL HOLD VAR", units);
 
             // feet
             units = "feet";
@@ -97,10 +99,9 @@ namespace GlassServer
             AddDef("AMBIENT WIND DIRECTION", units);
             AddDef("AUTOPILOT HEADING LOCK DIR", units);
 
-            // Radians
-            units = "radians";
             AddDef("PLANE HEADING DEGREES MAGNETIC", units);
             AddDef("PLANE HEADING DEGREES TRUE", units);
+
 
             // Temperature
             units = "celsius";
