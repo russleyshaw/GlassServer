@@ -2,6 +2,10 @@
 
 Server to provide simple access to MSFS 2020 via SimConnect.
 
+# Releases
+
+Find the latest release [here](https://github.com/russleyshaw/GlassServer/releases)
+
 # Building
 
 - Copy the `{MSFS SDK}/SimConnect SDK` folder to the repo root.
