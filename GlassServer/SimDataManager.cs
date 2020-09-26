@@ -151,15 +151,15 @@ namespace GlassServer
             units = "Enum";
             AddDef("ENGINE TYPE", units);
             AddDef("SURFACE TYPE", units);
-            AddDef("COM STATUS: 1", units);
-            AddDef("COM STATUS: 2", units);
+            AddDef("COM STATUS:1", units);
+            AddDef("COM STATUS:2", units);
 
             //Nav TO/ FROM flag:
             //0 = Off
             //1 = TO
             //2 = FROM
-            AddDef("NAV TOFROM: 1", units);
-            AddDef("NAV TOFROM: 2", units);
+            AddDef("NAV TOFROM:1", units);
+            AddDef("NAV TOFROM:2", units);
 
 
             Console.WriteLine("Populated definitions!");
