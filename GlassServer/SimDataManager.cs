@@ -51,8 +51,23 @@ namespace GlassServer
 
             AddDef("AUTOPILOT AVAILABLE", units);
             AddDef("AUTOPILOT MASTER", units);
+            AddDef("AUTOPILOT NAV1 LOCK", units);
+            AddDef("AUTOPILOT HEADING LOCK", units);
+            AddDef("AUTOPILOT ALTITUDE LOCK", units);
+            AddDef("AUTOPILOT ATTITUDE HOLD", units);
 
             AddDef("IS GEAR RETRACTABLE", units);
+            AddDef("GEAR HANDLE POSITION", units);
+
+            AddDef("GENERAL ENG COMBUSTION:1", units);
+            AddDef("GENERAL ENG COMBUSTION:2", units);
+            AddDef("GENERAL ENG COMBUSTION:3", units);
+            AddDef("GENERAL ENG COMBUSTION:4", units);
+
+            AddDef("GENERAL ENG MASTER ALTERNATOR:1", units);
+            AddDef("GENERAL ENG MASTER ALTERNATOR:2", units);
+            AddDef("GENERAL ENG MASTER ALTERNATOR:3", units);
+            AddDef("GENERAL ENG MASTER ALTERNATOR:4", units);
 
             // Knots
             units = "knots";
@@ -65,12 +80,27 @@ namespace GlassServer
             // feet
             units = "feet";
             AddDef("RADIO HEIGHT", units);
+            AddDef("AUTOPILOT ALTITUDE LOCK VAR", units);
+
+            // RPM
+            units = "rpm";
+            AddDef("GENERAL ENG RPM:1", units);
+            AddDef("GENERAL ENG RPM:2", units);
+            AddDef("GENERAL ENG RPM:3", units);
+            AddDef("GENERAL ENG RPM:4", units);
 
             // Degrees
             units = "degrees";
             AddDef("PLANE LATITUDE", units);
             AddDef("PLANE LONGITUDE", units);
+
             AddDef("AMBIENT WIND DIRECTION", units);
+            AddDef("AUTOPILOT HEADING LOCK DIR", units);
+
+            // Radians
+            units = "radians";
+            AddDef("PLANE HEADING DEGREES MAGNETIC", units);
+            AddDef("PLANE HEADING DEGREES TRUE", units);
 
             // Temperature
             units = "celsius";
@@ -79,11 +109,15 @@ namespace GlassServer
             // Number/Count
             units = "number";
             AddDef("NUMBER OF ENGINES", units);
+            AddDef("AUTOPILOT NAV SELECTED", units);
 
             // Enum
             units = "Enum";
             AddDef("ENGINE TYPE", units);
-              
+            AddDef("SURFACE TYPE", units);
+
+
+            Console.WriteLine("Populated definitions!");
 
             static void AddDef(string _name, string _units)
             {
