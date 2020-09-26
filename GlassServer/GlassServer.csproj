@@ -1,8 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Platforms>x64</Platforms>
+    <Authors>Russley Shaw</Authors>
+    <Company />
+    <StartupObject>GlassServer.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
