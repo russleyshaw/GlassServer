@@ -37,6 +37,8 @@ namespace GlassServer
 
             definitions.Clear();
 
+            // https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526981(v=msdn.10)
+
             // Booleans
             var units = "bool";
             AddDef("LIGHT STROBE", units);
@@ -70,6 +72,16 @@ namespace GlassServer
             AddDef("GENERAL ENG MASTER ALTERNATOR:3", units);
             AddDef("GENERAL ENG MASTER ALTERNATOR:4", units);
 
+            AddDef("COM TRANSMIT:1", units);
+            AddDef("COM TRANSMIT:2", units);
+            AddDef("COM RECIEVE ALL", units);
+
+            AddDef("NAV AVAILABLE:1", units);
+            AddDef("NAV AVAILABLE:2", units);
+            AddDef("NAV HAS NAV:1", units);
+            AddDef("NAV HAS NAV:2", units);
+            
+
             // Knots
             units = "knots";
             AddDef("AMBIENT WIND VELOCITY", units);
@@ -91,6 +103,20 @@ namespace GlassServer
             AddDef("GENERAL ENG RPM:3", units);
             AddDef("GENERAL ENG RPM:4", units);
 
+            // Frequency BCD16
+            units = "frequency bdc16";
+            AddDef("COM ACTIVE FREQUENCY:1", units);
+            AddDef("COM ACTIVE FREQUENCY:2", units);
+            AddDef("COM STANDBY FREQUENCY:1", units);
+            AddDef("COM STANDBY FREQUENCY:2", units);
+
+            // MHz
+            units = "MHz";
+            AddDef("NAV ACTIVE FREQUENCY:1", units);
+            AddDef("NAV ACTIVE FREQUENCY:2", units);
+            AddDef("NAV STANDBY FREQUENCY:1", units);
+            AddDef("NAV STANDBY FREQUENCY:2", units);
+
             // Degrees
             units = "degrees";
             AddDef("PLANE LATITUDE", units);
@@ -102,6 +128,11 @@ namespace GlassServer
             AddDef("PLANE HEADING DEGREES MAGNETIC", units);
             AddDef("PLANE HEADING DEGREES TRUE", units);
 
+            AddDef("NAV RADIAL:1", units);
+            AddDef("NAV RADIAL:2", units);
+            AddDef("NAV RADIAL ERROR:1", units);
+            AddDef("NAV RADIAL ERROR:2", units);
+
 
             // Temperature
             units = "celsius";
@@ -111,11 +142,24 @@ namespace GlassServer
             units = "number";
             AddDef("NUMBER OF ENGINES", units);
             AddDef("AUTOPILOT NAV SELECTED", units);
+            AddDef("NAV SIGNAL:1", units);
+            AddDef("NAV SIGNAL:2", units);
+            AddDef("NAV CDI:1", units);
+            AddDef("NAV CDI:2", units);
 
             // Enum
             units = "Enum";
             AddDef("ENGINE TYPE", units);
             AddDef("SURFACE TYPE", units);
+            AddDef("COM STATUS: 1", units);
+            AddDef("COM STATUS: 2", units);
+
+            //Nav TO/ FROM flag:
+            //0 = Off
+            //1 = TO
+            //2 = FROM
+            AddDef("NAV TOFROM: 1", units);
+            AddDef("NAV TOFROM: 2", units);
 
 
             Console.WriteLine("Populated definitions!");
