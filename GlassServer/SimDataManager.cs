@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,6 +59,7 @@ namespace GlassServer
             AddDef("AUTOPILOT ALTITUDE LOCK", units);
             AddDef("AUTOPILOT ATTITUDE HOLD", units);
             AddDef("AUTOPILOT VERTICAL HOLD", units);
+            AddDef("AUTOPILOT FLIGHT DIRECTOR ACTIVE", units);
 
             AddDef("IS GEAR RETRACTABLE", units);
             AddDef("GEAR HANDLE POSITION", units);
@@ -89,7 +91,10 @@ namespace GlassServer
             // feet/sec
             units = "feet per second";
             AddDef("VERTICAL SPEED", units);
-            AddDef("AUTOPILOT VERTICAL HOLD VAR", units);
+
+            // feet per minute
+            units = "feet per minute";
+            AddRoDef("AUTOPILOT VERTICAL HOLD VAR", units);
 
             // feet
             units = "feet";
@@ -167,6 +172,13 @@ namespace GlassServer
             static void AddDef(string _name, string _units)
             {
                 var def = new SimDataDef(_name, _units);
+                definitions.Add(def.name, def);
+            }
+
+            static void AddRoDef(string _name, string _units)
+            {
+                var def = new SimDataDef(_name, _units);
+                def.readOnly = true;
                 definitions.Add(def.name, def);
             }
         }
@@ -253,17 +265,31 @@ namespace GlassServer
 
                 return def;
             }
-
-            // Not found
-            return null;
+            else
+            {
+                throw new HttpResponseException(404, string.Format("{0} is not a defined simvar.", _sName));
+            }
         }
 
         public static void RequestDataSet(string _sName, double _dValue)
         {
             SimDataDef def;
-            if (definitions.TryGetValue(_sName, out def) && def.registered)
+            if (definitions.TryGetValue(_sName, out def))
             {
+                if(!def.registered)
+                {
+                    throw new HttpResponseException(403, string.Format("{0} is not registered yet.", _sName));
+                }
+
+                if (def.readOnly)
+                {
+                    throw new HttpResponseException(403, string.Format("{0} is read-only and cannot be set.", _sName));
+                }
                 m_oSimConnect.SetDataOnSimObject(def.eDef, SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_DATA_SET_FLAG.DEFAULT, _dValue);
+            }
+            else
+            {
+                throw new HttpResponseException(404, string.Format("{0} is not a defined simvar.", _sName));
             }
         }
 
@@ -274,13 +300,26 @@ namespace GlassServer
         /// <param name="_sUnits"></param>
         private static void RegisterDefinition(SimDataDef def)
         {
+            if(m_oSimConnect == null || !m_bConnected)
+            {
+                throw new HttpResponseException(503, "SimConnect service is not connected yet");
+            }
+
             if (def.registered) return;
             def.eDef = (DEFINITION)m_iCurrentDefinition;
             def.eRequest = (REQUEST)m_iCurrentRequest;
 
             m_oSimConnect.AddToDataDefinition(def.eDef, def.name, def.units, SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            m_oSimConnect.RegisterDataDefineStruct<double>(def.eRequest);
-            def.registered = true;
+
+            try
+            {
+                m_oSimConnect.RegisterDataDefineStruct<double>(def.eRequest);
+                def.registered = true;
+            }
+            catch
+            {
+                Console.WriteLine("Failed to register \"{0}\" simvar definition.", def.name);
+            }
 
             m_iCurrentDefinition++;
             m_iCurrentRequest++;

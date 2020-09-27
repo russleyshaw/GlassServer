@@ -27,6 +27,7 @@ namespace GlassServer
 
         public bool registered = false;
         public bool pending = false;
+        public bool readOnly = false;
      
         public SimDataDef(string _name, string _units)
         {
