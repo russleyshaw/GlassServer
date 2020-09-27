@@ -15,7 +15,7 @@ namespace GlassServer
     /// Provides managed access to SimConnect values. 
     /// The intent is to have this manager keep a cache of requested values, adding more values to the polling loop as they're requested.
     /// </summary>
-    class SimDataManager
+    class SimManager
     {
         private const int WM_USER_SIMCONNECT = 0x0402;
         private static SimConnect m_oSimConnect = null;
@@ -30,13 +30,126 @@ namespace GlassServer
         private static uint m_iCurrentDefinition = 0;
         private static uint m_iCurrentRequest = 0;
 
-        public static Dictionary<string, SimDataDef> definitions = new Dictionary<string, SimDataDef>();
+        private static Dictionary<string, SimDataDef> m_dataDefinitions = new Dictionary<string, SimDataDef>();
+        private static Dictionary<string, SimEventDef> m_eventDefinitions = new Dictionary<string, SimEventDef>();
 
-        static void PopulateDefinitions()
+
+        static void PopulateEventDefinitions()
         {
-            Console.WriteLine("Populating definitions...");
+            Console.WriteLine("Populating event definitions...");
+            m_eventDefinitions.Clear();
 
-            definitions.Clear();
+            var b = new SimEventDefBuilder();
+
+            Add(b.Name("PARKING_BRAKES"));
+            Add(b.Name("GEAR_TOGGLE"));
+            Add(b.Name("SMOKE_TOGGLE"));
+            Add(b.Name("PITOT_HEAT_TOGGLE"));
+
+            Add(b.Name("TOGGLE_MASTER_BATTERY"));
+            Add(b.Name("TOGGLE_MASTER_ALTERNATOR"));
+            Add(b.Name("APU_GENERATOR_SWITCH_TOGGLE"));
+
+            Add(b.Name("FLAPS_UP"));
+            Add(b.Name("FLAPS_1"));
+            Add(b.Name("FLAPS_2"));
+            Add(b.Name("FLAPS_3"));
+            Add(b.Name("FLAPS_DOWN"));
+
+            Add(b.Name("AP_MASTER"));
+            Add(b.Name("YAW_DAMPER_TOGGLE"));
+            Add(b.Name("AP_PANEL_HEADING_HOLD"));
+            Add(b.Name("TOGGLE_FLIGHT_DIRECTOR"));
+            Add(b.Name("HEADING_BUG_SET")); // degrees
+            Add(b.Name("TOGGLE_AVIONICS_MASTER"));
+
+            Add(b.Name("REQUEST_FUEL_KEY"));
+
+            Add(b.Name("COM_RADIO_WHOLE_DEC")); // Decrements COM by one MHz
+            Add(b.Name("COM_RADIO_WHOLE_INC")); // Increments COM by one MHz
+            Add(b.Name("COM_RADIO_FRACT_DEC")); // Decrements COM by 25 KHz
+            Add(b.Name("COM_RADIO_FRACT_INC")); // Increments COM by 25 KHz
+
+            Add(b.Name("DECREASE_DECISION_HEIGHT"));
+            Add(b.Name("INCREASE_DECISION_HEIGHT"));
+
+            Add(b.Name("TOGGLE_WING_FOLD"));
+            Add(b.Name("TOGGLE_PUSHBACK"));
+
+            Add(b.Name("AP_VS_VAR_INC"));
+            Add(b.Name("AP_VS_VAR_DEC"));
+
+            Add(b.Name("BAROMETRIC"));
+
+            foreach (var navId in new[] { 1, 2 })
+            {
+                foreach (var dir in new[] { "INC", "DEC " })
+                {
+                    foreach (var amount in new[] { "FRACT", "WHOLE" })
+                    {
+                        Add(b.Name(string.Format("NAV{0}_RADIO_{1}_{2}", navId, amount, dir)));
+                    }
+
+                    Add(b.Name(string.Format("VOR{0}_OBI_{1}", navId, dir)));
+                }
+
+                Add(b.Name(string.Format("NAV{0}_RADIO_SET", navId)));
+                Add(b.Name(string.Format("NAV{0}_STBY_SET", navId)));
+                Add(b.Name(string.Format("NAV{0}_RADIO_SWAP", navId)));
+                Add(b.Name(string.Format("VOR{0}_SET", navId)));
+                Add(b.Name(string.Format("DME{0}_TOGGLE", navId)));
+            }
+
+
+            Add(b.Name("THROTTLE_FULL"));
+            Add(b.Name("THROTTLE_INCR"));
+            Add(b.Name("THROTTLE_INCR_SMALL"));
+            Add(b.Name("THROTTLE_DECR"));
+            Add(b.Name("THROTTLE_DECR_SMALL"));
+            Add(b.Name("THROTTLE_CUT"));
+            Add(b.Name("THROTTLE_SET")); // 0 to 16383
+
+            Add(b.Name("TOGGLE_ALL_STARTERS"));
+
+            foreach (var engId in new[] { 1, 2, 3, 4 })
+            {
+                Add(b.Name(string.Format("TOGGLE_ALTERNATOR{0}", engId)));
+                Add(b.Name(string.Format("TOGGLE_STARTER{0}", engId)));
+
+                Add(b.Name(string.Format("MIXTURE{0}_SET", engId))); // 0 to 16383
+                Add(b.Name(string.Format("MIXTURE{0}_RICH", engId)));
+                Add(b.Name(string.Format("MIXTURE{0}_INCR", engId)));
+                Add(b.Name(string.Format("MIXTURE{0}_INCR_SMALL", engId)));
+                Add(b.Name(string.Format("MIXTURE{0}_DECR", engId)));
+                Add(b.Name(string.Format("MIXTURE{0}_DECR_SMALL", engId)));
+                Add(b.Name(string.Format("MIXTURE{0}_LEAN", engId)));
+
+                Add(b.Name(string.Format("THROTTLE{0}_FULL", engId)));
+                Add(b.Name(string.Format("THROTTLE{0}_INCR", engId)));
+                Add(b.Name(string.Format("THROTTLE{0}_INCR_SMALL", engId)));
+                Add(b.Name(string.Format("THROTTLE{0}_DECR", engId)));
+                Add(b.Name(string.Format("THROTTLE{0}_DECR_SMALL", engId)));
+                Add(b.Name(string.Format("THROTTLE{0}_CUT", engId)));
+                Add(b.Name(string.Format("THROTTLE{0}_SET", engId))); // 0 to 16383
+            }
+
+
+
+
+
+            Console.WriteLine("Populated event definitions!");
+
+            static void Add(SimEventDefBuilder _builder)
+            {
+                var def = _builder.Build();
+                m_eventDefinitions.Add(def.name, def);
+            }
+        }
+
+        static void PopulateDataDefinitions()
+        {
+            Console.WriteLine("Populating data definitions...");
+            m_dataDefinitions.Clear();
 
             // https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526981(v=msdn.10)
 
@@ -199,12 +312,12 @@ namespace GlassServer
             Add(b.Name("NAV TOFROM:2").ReadOnly().Enum((0, "Off"), (1, "To"), (2, "From")));
 
 
-            Console.WriteLine("Populated definitions!");
+            Console.WriteLine("Populated data definitions!");
 
             static void Add(SimDataDefBuilder _builder)
             {
                 var def = _builder.Build();
-                definitions.Add(def.name, def);
+                m_dataDefinitions.Add(def.name, def);
             }
 
         }
@@ -252,13 +365,20 @@ namespace GlassServer
                 await Task.Delay(1000);
             }
 
-            PopulateDefinitions();
+            PopulateDataDefinitions();
+            PopulateEventDefinitions();
 
-            foreach (var def in definitions.Values)
+            foreach (var def in m_dataDefinitions.Values)
             {
-                RegisterDefinition(def);
+                RegisterDataDefinition(def);
             }
 
+            foreach (var def in m_eventDefinitions.Values)
+            {
+                RegisterEventDefinition(def);
+            }
+
+            m_oSimConnect.SetNotificationGroupPriority(EVENT_GROUP.Main, SimConnect.SIMCONNECT_GROUP_PRIORITY_HIGHEST);
         }
 
         public static void Disconnect()
@@ -283,11 +403,13 @@ namespace GlassServer
         /// <returns></returns>
         public static SimDataDef GetDefinition(string _sName)
         {
+            AssertConnected();
+
             // Try once
             SimDataDef def;
-            if (definitions.TryGetValue(_sName, out def))
+            if (m_dataDefinitions.TryGetValue(_sName, out def))
             {
-                if (!def.registered) RegisterDefinition(def);
+                if (!def.registered) RegisterDataDefinition(def);
 
                 return def;
             }
@@ -299,8 +421,10 @@ namespace GlassServer
 
         public static void RequestDataSet(string _sName, double _dValue)
         {
+            AssertConnected();
+
             SimDataDef def;
-            if (definitions.TryGetValue(_sName, out def))
+            if (m_dataDefinitions.TryGetValue(_sName, out def))
             {
                 if (!def.registered)
                 {
@@ -319,21 +443,35 @@ namespace GlassServer
             }
         }
 
+        public static void SendEvent(string _sName, uint _dValue)
+        {
+            AssertConnected();
+
+            SimEventDef def;
+            if (m_eventDefinitions.TryGetValue(_sName, out def))
+            {
+                if (!def.registered) RegisterEventDefinition(def);
+
+                m_oSimConnect.TransmitClientEvent(0, def.eDef, _dValue, EVENT_GROUP.Main, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            }
+            else
+            {
+                throw new HttpResponseException(404, string.Format("{0} is not a defined sim event.", _sName));
+            }
+        }
+
         /// <summary>
         /// Add a new SimData request to the polling.
         /// </summary>
         /// <param name="_sName"></param>
         /// <param name="_sUnits"></param>
-        private static void RegisterDefinition(SimDataDef def)
+        private static void RegisterDataDefinition(SimDataDef def)
         {
-            if (m_oSimConnect == null || !m_bConnected)
-            {
-                throw new HttpResponseException(503, "SimConnect service is not connected yet");
-            }
-
             if (def.registered) return;
             def.eDef = (DEFINITION)m_iCurrentDefinition;
             def.eRequest = (REQUEST)m_iCurrentRequest;
+            m_iCurrentDefinition++;
+            m_iCurrentRequest++;
 
             try
             {
@@ -350,6 +488,24 @@ namespace GlassServer
             m_iCurrentRequest++;
         }
 
+        private static void RegisterEventDefinition(SimEventDef def)
+        {
+            if (def.registered) return;
+
+            def.eDef = (EVENT_DEFINITION)m_iCurrentDefinition;
+            m_iCurrentDefinition++;
+
+            try
+            {
+                m_oSimConnect.MapClientEventToSimEvent(def.eDef, def.name);
+                m_oSimConnect.AddClientEventToNotificationGroup(EVENT_GROUP.Main, def.eDef, false);
+                def.registered = true;
+            }
+            catch
+            {
+                Console.WriteLine("Failed to register \"{0}\" sim event.", def.name);
+            }
+        }
 
 
         /// <summary>
@@ -361,7 +517,7 @@ namespace GlassServer
 
             while (true)
             {
-                var defs = definitions.Values.Where(def => def.registered && !def.pending);
+                var defs = m_dataDefinitions.Values.Where(def => def.registered && !def.pending);
                 foreach (var def in defs)
                 {
                     try
@@ -421,9 +577,10 @@ namespace GlassServer
 
         private static void SimConnect_OnRecvSimobjectDataByType(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
         {
+
             var iRequest = data.dwRequestID;
 
-            foreach (var entry in definitions)
+            foreach (var entry in m_dataDefinitions)
             {
                 var oSimDataRequest = entry.Value;
 
@@ -436,10 +593,19 @@ namespace GlassServer
             }
         }
 
+        private static void AssertConnected()
+        {
+            if (m_oSimConnect == null || !m_bConnected)
+            {
+                throw new HttpResponseException(503, "SimConnect service is not connected.");
+            }
+        }
+
         private static void SimConnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
         {
             SIMCONNECT_EXCEPTION eException = (SIMCONNECT_EXCEPTION)data.dwException;
-            Console.WriteLine("SimConnect_OnRecvException: " + eException.ToString());
+            
+            Console.WriteLine("SimConnect_OnRecvException: ID {0}, SendID {1} " + eException.ToString(), data.dwID, data.dwSendID);
         }
     }
 }

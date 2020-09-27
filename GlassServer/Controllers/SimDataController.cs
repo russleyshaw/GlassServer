@@ -22,7 +22,7 @@ namespace GlassServer.Controllers
         {
             // Request all data at once and wait until a result.
             var results = saNames.Distinct().Select(sName => {
-                var def = SimDataManager.GetDefinition(sName);
+                var def = SimManager.GetDefinition(sName);
 
                 if (def == null) return null;
 
@@ -42,11 +42,9 @@ namespace GlassServer.Controllers
         [EnableCors("AllowAll")]
         public async Task Post([FromBody] SimDataPostEntry[] entries)
         {
-            await SimDataManager.Connect();
-
             foreach (var entry in entries)
             {
-                SimDataManager.RequestDataSet(entry.name, entry.value);
+                SimManager.RequestDataSet(entry.name, entry.value);
             }
         }
 

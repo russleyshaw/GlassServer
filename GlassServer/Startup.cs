@@ -42,7 +42,7 @@ namespace GlassServer
                 app.UseHsts();
             }
 
-            SimDataManager.Connect();
+            SimManager.Connect();
 
             app.UseRouting();
 
