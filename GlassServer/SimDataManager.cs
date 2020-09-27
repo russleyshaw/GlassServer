@@ -63,6 +63,7 @@ namespace GlassServer
 
             AddDef("IS GEAR RETRACTABLE", units);
             AddDef("GEAR HANDLE POSITION", units);
+            AddRoDef("BRAKE PARKING POSITION", units); // Actually wants to be a position 32k but bool is easier to understand.
 
             AddDef("GENERAL ENG COMBUSTION:1", units);
             AddDef("GENERAL ENG COMBUSTION:2", units);
@@ -86,11 +87,11 @@ namespace GlassServer
 
             // Knots
             units = "knots";
-            AddDef("AMBIENT WIND VELOCITY", units);
+            AddRoDef("AMBIENT WIND VELOCITY", units);
 
             // feet/sec
             units = "feet per second";
-            AddDef("VERTICAL SPEED", units);
+            AddRoDef("VERTICAL SPEED", units);
 
             // feet per minute
             units = "feet per minute";
@@ -98,7 +99,7 @@ namespace GlassServer
 
             // feet
             units = "feet";
-            AddDef("RADIO HEIGHT", units);
+            AddRoDef("RADIO HEIGHT", units);
             AddDef("AUTOPILOT ALTITUDE LOCK VAR", units);
 
             // RPM
@@ -124,14 +125,14 @@ namespace GlassServer
 
             // Degrees
             units = "degrees";
-            AddDef("PLANE LATITUDE", units);
-            AddDef("PLANE LONGITUDE", units);
+            AddRoDef("PLANE LATITUDE", units);
+            AddRoDef("PLANE LONGITUDE", units);
 
-            AddDef("AMBIENT WIND DIRECTION", units);
+            AddRoDef("AMBIENT WIND DIRECTION", units);
             AddDef("AUTOPILOT HEADING LOCK DIR", units);
 
-            AddDef("PLANE HEADING DEGREES MAGNETIC", units);
-            AddDef("PLANE HEADING DEGREES TRUE", units);
+            AddRoDef("PLANE HEADING DEGREES MAGNETIC", units);
+            AddRoDef("PLANE HEADING DEGREES TRUE", units);
 
             AddDef("NAV RADIAL:1", units);
             AddDef("NAV RADIAL:2", units);
@@ -141,11 +142,11 @@ namespace GlassServer
 
             // Temperature
             units = "celsius";
-            AddDef("AMBIENT TEMPERATURE", units);
+            AddRoDef("AMBIENT TEMPERATURE", units);
 
             // Number/Count
             units = "number";
-            AddDef("NUMBER OF ENGINES", units);
+            AddRoDef("NUMBER OF ENGINES", units);
             AddDef("AUTOPILOT NAV SELECTED", units);
             AddDef("NAV SIGNAL:1", units);
             AddDef("NAV SIGNAL:2", units);
@@ -154,8 +155,8 @@ namespace GlassServer
 
             // Enum
             units = "Enum";
-            AddDef("ENGINE TYPE", units);
-            AddDef("SURFACE TYPE", units);
+            AddRoDef("ENGINE TYPE", units);
+            AddRoDef("SURFACE TYPE", units);
             AddDef("COM STATUS:1", units);
             AddDef("COM STATUS:2", units);
 
@@ -309,10 +310,9 @@ namespace GlassServer
             def.eDef = (DEFINITION)m_iCurrentDefinition;
             def.eRequest = (REQUEST)m_iCurrentRequest;
 
-            m_oSimConnect.AddToDataDefinition(def.eDef, def.name, def.units, SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-
             try
             {
+                m_oSimConnect.AddToDataDefinition(def.eDef, def.name, def.units, SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 m_oSimConnect.RegisterDataDefineStruct<double>(def.eRequest);
                 def.registered = true;
             }
@@ -346,7 +346,7 @@ namespace GlassServer
                     }
                     catch(Exception e)
                     {
-                        Console.WriteLine("Error requesting sim object type: " + e.Message);
+                        Console.WriteLine("Error requesting sim object type {0} : " + e.ToString(), def.name);
                     }
                 }
 
@@ -373,6 +373,10 @@ namespace GlassServer
                     {
                         Console.WriteLine("Error Processing Message" + ex.Message);
                     }
+                }
+                else
+                {
+                    Thread.Sleep(100);
                 }
             }
         }
