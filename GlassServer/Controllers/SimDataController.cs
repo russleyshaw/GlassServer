@@ -29,6 +29,7 @@ namespace GlassServer.Controllers
                 return new SimDataModel {
                     name = def.name,
                     value = def.value,
+                    text = def.text,
                     units = def.units
                 };
             }).Where(def => def != null);

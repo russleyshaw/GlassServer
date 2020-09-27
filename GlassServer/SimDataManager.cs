@@ -30,7 +30,7 @@ namespace GlassServer
         private static uint m_iCurrentDefinition = 0;
         private static uint m_iCurrentRequest = 0;
 
-        public  static Dictionary<string, SimDataDef> definitions = new Dictionary<string, SimDataDef>();
+        public static Dictionary<string, SimDataDef> definitions = new Dictionary<string, SimDataDef>();
 
         static void PopulateDefinitions()
         {
@@ -40,148 +40,173 @@ namespace GlassServer
 
             // https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526981(v=msdn.10)
 
+            var b = new SimDataDefBuilder();
+
             // Booleans
-            var units = "bool";
-            AddDef("LIGHT STROBE", units);
-            AddDef("LIGHT PANEL", units);
-            AddDef("LIGHT LANDING", units);
-            AddDef("LIGHT TAXI", units);
-            AddDef("LIGHT BEACON", units);
-            AddDef("LIGHT NAV", units);
-            AddDef("LIGHT LOGO", units);
-            AddDef("LIGHT WING", units);
-            AddDef("LIGHT CABIN", units);
+            b = b.Units("boolean");
+            Add(b.Name("LIGHT STROBE"));
+            Add(b.Name("LIGHT PANEL"));
+            Add(b.Name("LIGHT LANDING"));
+            Add(b.Name("LIGHT TAXI"));
+            Add(b.Name("LIGHT BEACON"));
+            Add(b.Name("LIGHT NAV"));
+            Add(b.Name("LIGHT LOGO"));
+            Add(b.Name("LIGHT WING"));
+            Add(b.Name("LIGHT CABIN"));
 
-            AddDef("AUTOPILOT AVAILABLE", units);
-            AddDef("AUTOPILOT MASTER", units);
-            AddDef("AUTOPILOT NAV1 LOCK", units);
-            AddDef("AUTOPILOT HEADING LOCK", units);
-            AddDef("AUTOPILOT ALTITUDE LOCK", units);
-            AddDef("AUTOPILOT ATTITUDE HOLD", units);
-            AddDef("AUTOPILOT VERTICAL HOLD", units);
-            AddDef("AUTOPILOT FLIGHT DIRECTOR ACTIVE", units);
+            Add(b.Name("AUTOPILOT AVAILABLE"));
+            Add(b.Name("AUTOPILOT MASTER"));
+            Add(b.Name("AUTOPILOT NAV1 LOCK"));
+            Add(b.Name("AUTOPILOT HEADING LOCK"));
+            Add(b.Name("AUTOPILOT ALTITUDE LOCK"));
+            Add(b.Name("AUTOPILOT ATTITUDE HOLD"));
+            Add(b.Name("AUTOPILOT VERTICAL HOLD"));
+            Add(b.Name("AUTOPILOT FLIGHT DIRECTOR ACTIVE"));
 
-            AddDef("IS GEAR RETRACTABLE", units);
-            AddDef("GEAR HANDLE POSITION", units);
-            AddRoDef("BRAKE PARKING POSITION", units); // Actually wants to be a position 32k but bool is easier to understand.
+            Add(b.Name("IS GEAR RETRACTABLE"));
+            Add(b.Name("GEAR HANDLE POSITION"));
+            Add(b.Name("BRAKE PARKING POSITION").ReadOnly()); // Actually wants to be a position 32k but bool is easier to understand.
 
-            AddDef("GENERAL ENG COMBUSTION:1", units);
-            AddDef("GENERAL ENG COMBUSTION:2", units);
-            AddDef("GENERAL ENG COMBUSTION:3", units);
-            AddDef("GENERAL ENG COMBUSTION:4", units);
+            Add(b.Name("GENERAL ENG COMBUSTION:1"));
+            Add(b.Name("GENERAL ENG COMBUSTION:2"));
+            Add(b.Name("GENERAL ENG COMBUSTION:3"));
+            Add(b.Name("GENERAL ENG COMBUSTION:4"));
 
-            AddDef("GENERAL ENG MASTER ALTERNATOR:1", units);
-            AddDef("GENERAL ENG MASTER ALTERNATOR:2", units);
-            AddDef("GENERAL ENG MASTER ALTERNATOR:3", units);
-            AddDef("GENERAL ENG MASTER ALTERNATOR:4", units);
+            Add(b.Name("GENERAL ENG MASTER ALTERNATOR:1"));
+            Add(b.Name("GENERAL ENG MASTER ALTERNATOR:2"));
+            Add(b.Name("GENERAL ENG MASTER ALTERNATOR:3"));
+            Add(b.Name("GENERAL ENG MASTER ALTERNATOR:4"));
 
-            AddDef("COM TRANSMIT:1", units);
-            AddDef("COM TRANSMIT:2", units);
-            AddDef("COM RECIEVE ALL", units);
+            Add(b.Name("COM TRANSMIT:1"));
+            Add(b.Name("COM TRANSMIT:2"));
+            Add(b.Name("COM RECIEVE ALL"));
 
-            AddDef("NAV AVAILABLE:1", units);
-            AddDef("NAV AVAILABLE:2", units);
-            AddDef("NAV HAS NAV:1", units);
-            AddDef("NAV HAS NAV:2", units);
-            
+            Add(b.Name("NAV AVAILABLE:1"));
+            Add(b.Name("NAV AVAILABLE:2"));
+            Add(b.Name("NAV HAS NAV:1"));
+            Add(b.Name("NAV HAS NAV:2"));
+
+            Add(b.Name("SIM ON GROUND").ReadOnly());
+
 
             // Knots
-            units = "knots";
-            AddRoDef("AMBIENT WIND VELOCITY", units);
+            b = b.Units("boolean");
+            Add(b.Name("AMBIENT WIND VELOCITY").ReadOnly());
 
             // feet/sec
-            units = "feet per second";
-            AddRoDef("VERTICAL SPEED", units);
+            b = b.Units("feet per second");
+            Add(b.Name("VERTICAL SPEED").ReadOnly());
 
             // feet per minute
-            units = "feet per minute";
-            AddRoDef("AUTOPILOT VERTICAL HOLD VAR", units);
+            b = b.Units("feet per minute");
+            Add(b.Name("AUTOPILOT VERTICAL HOLD VAR").ReadOnly());
 
             // feet
-            units = "feet";
-            AddRoDef("RADIO HEIGHT", units);
-            AddDef("AUTOPILOT ALTITUDE LOCK VAR", units);
+            b = b.Units("feet");
+            Add(b.Name("RADIO HEIGHT").ReadOnly());
+            Add(b.Name("AUTOPILOT ALTITUDE LOCK VAR"));
 
             // RPM
-            units = "rpm";
-            AddDef("GENERAL ENG RPM:1", units);
-            AddDef("GENERAL ENG RPM:2", units);
-            AddDef("GENERAL ENG RPM:3", units);
-            AddDef("GENERAL ENG RPM:4", units);
+            b = b.Units("rpm");
+            Add(b.Name("GENERAL ENG RPM:1"));
+            Add(b.Name("GENERAL ENG RPM:2"));
+            Add(b.Name("GENERAL ENG RPM:3"));
+            Add(b.Name("GENERAL ENG RPM:4"));
 
             // Frequency BCD16
-            units = "frequency bdc16";
-            AddDef("COM ACTIVE FREQUENCY:1", units);
-            AddDef("COM ACTIVE FREQUENCY:2", units);
-            AddDef("COM STANDBY FREQUENCY:1", units);
-            AddDef("COM STANDBY FREQUENCY:2", units);
+            b = b.Units("frequency bcd16");
+            Add(b.Name("COM ACTIVE FREQUENCY:1"));
+            Add(b.Name("COM ACTIVE FREQUENCY:2"));
+            Add(b.Name("COM STANDBY FREQUENCY:1"));
+            Add(b.Name("COM STANDBY FREQUENCY:2"));
 
             // MHz
-            units = "MHz";
-            AddDef("NAV ACTIVE FREQUENCY:1", units);
-            AddDef("NAV ACTIVE FREQUENCY:2", units);
-            AddDef("NAV STANDBY FREQUENCY:1", units);
-            AddDef("NAV STANDBY FREQUENCY:2", units);
+            b = b.Units("MHz");
+            Add(b.Name("NAV ACTIVE FREQUENCY:1"));
+            Add(b.Name("NAV ACTIVE FREQUENCY:2"));
+            Add(b.Name("NAV STANDBY FREQUENCY:1"));
+            Add(b.Name("NAV STANDBY FREQUENCY:2"));
 
             // Degrees
-            units = "degrees";
-            AddRoDef("PLANE LATITUDE", units);
-            AddRoDef("PLANE LONGITUDE", units);
+            b = b.Units("degrees");
+            Add(b.Name("PLANE LATITUDE").ReadOnly());
+            Add(b.Name("PLANE LONGITUDE").ReadOnly());
 
-            AddRoDef("AMBIENT WIND DIRECTION", units);
-            AddDef("AUTOPILOT HEADING LOCK DIR", units);
+            Add(b.Name("AMBIENT WIND DIRECTION").ReadOnly());
+            Add(b.Name("AUTOPILOT HEADING LOCK DIR").ReadOnly());
 
-            AddRoDef("PLANE HEADING DEGREES MAGNETIC", units);
-            AddRoDef("PLANE HEADING DEGREES TRUE", units);
+            Add(b.Name("PLANE HEADING DEGREES MAGNETIC").ReadOnly());
+            Add(b.Name("PLANE HEADING DEGREES TRUE").ReadOnly());
 
-            AddDef("NAV RADIAL:1", units);
-            AddDef("NAV RADIAL:2", units);
-            AddDef("NAV RADIAL ERROR:1", units);
-            AddDef("NAV RADIAL ERROR:2", units);
+            Add(b.Name("NAV RADIAL:1"));
+            Add(b.Name("NAV RADIAL:2"));
+            Add(b.Name("NAV RADIAL ERROR:1"));
+            Add(b.Name("NAV RADIAL ERROR:2"));
 
 
             // Temperature
-            units = "celsius";
-            AddRoDef("AMBIENT TEMPERATURE", units);
+            b = b.Units("celsius");
+            Add(b.Name("AMBIENT TEMPERATURE").ReadOnly());
 
             // Number/Count
-            units = "number";
-            AddRoDef("NUMBER OF ENGINES", units);
-            AddDef("AUTOPILOT NAV SELECTED", units);
-            AddDef("NAV SIGNAL:1", units);
-            AddDef("NAV SIGNAL:2", units);
-            AddDef("NAV CDI:1", units);
-            AddDef("NAV CDI:2", units);
+            b = b.Units("number");
+            Add(b.Name("NUMBER OF ENGINES").ReadOnly());
+            Add(b.Name("AUTOPILOT NAV SELECTED"));
+            Add(b.Name("NAV SIGNAL:1"));
+            Add(b.Name("NAV SIGNAL:2"));
+            Add(b.Name("NAV CDI:1"));
+            Add(b.Name("NAV CDI:2"));
 
             // Enum
-            units = "Enum";
-            AddRoDef("ENGINE TYPE", units);
-            AddRoDef("SURFACE TYPE", units);
-            AddDef("COM STATUS:1", units);
-            AddDef("COM STATUS:2", units);
+            b = b.Units("Enum");
+            Add(b.Name("ENGINE TYPE").ReadOnly().Enum((0, "Piston"), (1, "Jet"), (2, "None")));
+            Add(b.Name("SURFACE TYPE").ReadOnly().Enum(
+                (0, "Concrete"),
+                (1, "Grass"),
+                (2, "Water"),
+                (3, "Grass Bumpy"),
+                (4, "Asphalt"),
+                (5, "Short Grass"),
+                (6, "Long Grass"),
+                (7, "Hard Turf"),
+                (8, "Snow"),
+                (9, "Ice"),
+                (10, "Urban"),
+                (11, "Forest"),
+                (12, "Dirt"),
+                (13, "Coral"),
+                (14, "Gravel"),
+                (15, "Oil Treated"),
+                (16, "Steel Mats"),
+                (17, "Bituminus"),
+                (18, "Brick"),
+                (19, "Macadam"),
+                (20, "Planks"),
+                (21, "Sand"),
+                (22, "Shale"),
+                (23, "Tarmac"),
+                (24, "Wright Flyer Track")
+            ));
+
+            Add(b.Name("COM STATUS:1").ReadOnly());
+            Add(b.Name("COM STATUS:2").ReadOnly());
 
             //Nav TO/ FROM flag:
             //0 = Off
             //1 = TO
             //2 = FROM
-            AddDef("NAV TOFROM:1", units);
-            AddDef("NAV TOFROM:2", units);
+            Add(b.Name("NAV TOFROM:1"));
+            Add(b.Name("NAV TOFROM:2"));
 
 
             Console.WriteLine("Populated definitions!");
 
-            static void AddDef(string _name, string _units)
+            static void Add(SimDataDefBuilder _builder)
             {
-                var def = new SimDataDef(_name, _units);
+                var def = _builder.Build();
                 definitions.Add(def.name, def);
             }
 
-            static void AddRoDef(string _name, string _units)
-            {
-                var def = new SimDataDef(_name, _units);
-                def.readOnly = true;
-                definitions.Add(def.name, def);
-            }
         }
 
         public static async Task Connect()
@@ -221,7 +246,7 @@ namespace GlassServer
             m_tRequestThread.IsBackground = true;
             m_tRequestThread.Start();
 
-            while(!m_bConnected)
+            while (!m_bConnected)
             {
                 Console.WriteLine("Waiting to connect...");
                 await Task.Delay(1000);
@@ -229,11 +254,11 @@ namespace GlassServer
 
             PopulateDefinitions();
 
-            foreach(var def in definitions.Values)
+            foreach (var def in definitions.Values)
             {
                 RegisterDefinition(def);
             }
-           
+
         }
 
         public static void Disconnect()
@@ -277,7 +302,7 @@ namespace GlassServer
             SimDataDef def;
             if (definitions.TryGetValue(_sName, out def))
             {
-                if(!def.registered)
+                if (!def.registered)
                 {
                     throw new HttpResponseException(403, string.Format("{0} is not registered yet.", _sName));
                 }
@@ -301,7 +326,7 @@ namespace GlassServer
         /// <param name="_sUnits"></param>
         private static void RegisterDefinition(SimDataDef def)
         {
-            if(m_oSimConnect == null || !m_bConnected)
+            if (m_oSimConnect == null || !m_bConnected)
             {
                 throw new HttpResponseException(503, "SimConnect service is not connected yet");
             }
@@ -332,7 +357,7 @@ namespace GlassServer
         /// </summary>
         private static void RequestProcessor()
         {
-            while(!m_bConnected) Thread.Sleep(1000);
+            while (!m_bConnected) Thread.Sleep(1000);
 
             while (true)
             {
@@ -344,7 +369,7 @@ namespace GlassServer
                         m_oSimConnect?.RequestDataOnSimObjectType(def.eRequest, def.eDef, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                         def.pending = true;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         Console.WriteLine("Error requesting sim object type {0} : " + e.ToString(), def.name);
                     }
@@ -405,7 +430,7 @@ namespace GlassServer
                 if (iRequest == (uint)oSimDataRequest.eRequest)
                 {
                     double dValue = (double)data.dwData[0];
-                    oSimDataRequest.value = dValue;
+                    oSimDataRequest.SetValue(dValue);
                     oSimDataRequest.pending = false;
                 }
             }
