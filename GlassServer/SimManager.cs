@@ -65,10 +65,7 @@ namespace GlassServer
 
             Add(b.Name("REQUEST_FUEL_KEY"));
 
-            Add(b.Name("COM_RADIO_WHOLE_DEC")); // Decrements COM by one MHz
-            Add(b.Name("COM_RADIO_WHOLE_INC")); // Increments COM by one MHz
-            Add(b.Name("COM_RADIO_FRACT_DEC")); // Decrements COM by 25 KHz
-            Add(b.Name("COM_RADIO_FRACT_INC")); // Increments COM by 25 KHz
+
 
             Add(b.Name("DECREASE_DECISION_HEIGHT"));
             Add(b.Name("INCREASE_DECISION_HEIGHT"));
@@ -80,6 +77,12 @@ namespace GlassServer
             Add(b.Name("AP_VS_VAR_DEC"));
 
             Add(b.Name("BAROMETRIC"));
+
+            Add(b.Name("COM_RECEIVE_ALL_TOGGLE"));
+            Add(b.Name("COM_RADIO_WHOLE_DEC")); // Decrements COM by one MHz
+            Add(b.Name("COM_RADIO_WHOLE_INC")); // Increments COM by one MHz
+            Add(b.Name("COM_RADIO_FRACT_DEC")); // Decrements COM by 25 KHz
+            Add(b.Name("COM_RADIO_FRACT_INC")); // Increments COM by 25 KHz
 
             foreach (var navId in new[] { 1, 2 })
             {
@@ -96,6 +99,9 @@ namespace GlassServer
                 Add(b.Name(string.Format("NAV{0}_RADIO_SET", navId)));
                 Add(b.Name(string.Format("NAV{0}_STBY_SET", navId)));
                 Add(b.Name(string.Format("NAV{0}_RADIO_SWAP", navId)));
+
+                Add(b.Name(string.Format("COM{0}_TRANSMIT_SELECT", navId)));
+
                 Add(b.Name(string.Format("VOR{0}_SET", navId)));
                 Add(b.Name(string.Format("DME{0}_TOGGLE", navId)));
             }
@@ -370,12 +376,26 @@ namespace GlassServer
 
             foreach (var def in m_dataDefinitions.Values)
             {
-                RegisterDataDefinition(def);
+                try
+                {
+                    RegisterDataDefinition(def);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Failed to register sim data def \"{0}\" ({1})", def.name, def.units);
+                }
             }
 
             foreach (var def in m_eventDefinitions.Values)
             {
-                RegisterEventDefinition(def);
+                try
+                {
+                    RegisterEventDefinition(def);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Failed to register sim event def \"{0}\"", def.name);
+                }
             }
 
             m_oSimConnect.SetNotificationGroupPriority(EVENT_GROUP.Main, SimConnect.SIMCONNECT_GROUP_PRIORITY_HIGHEST);
@@ -481,7 +501,7 @@ namespace GlassServer
             }
             catch
             {
-                Console.WriteLine("Failed to register \"{0}\" simvar definition.", def.name);
+                // Console.WriteLine("Failed to register \"{0}\" simvar definition.", def.name);
             }
 
             m_iCurrentDefinition++;
@@ -495,16 +515,9 @@ namespace GlassServer
             def.eDef = (EVENT_DEFINITION)m_iCurrentDefinition;
             m_iCurrentDefinition++;
 
-            try
-            {
-                m_oSimConnect.MapClientEventToSimEvent(def.eDef, def.name);
-                m_oSimConnect.AddClientEventToNotificationGroup(EVENT_GROUP.Main, def.eDef, false);
-                def.registered = true;
-            }
-            catch
-            {
-                Console.WriteLine("Failed to register \"{0}\" sim event.", def.name);
-            }
+            m_oSimConnect.MapClientEventToSimEvent(def.eDef, def.name);
+            m_oSimConnect.AddClientEventToNotificationGroup(EVENT_GROUP.Main, def.eDef, false);
+            def.registered = true;
         }
 
 
