@@ -195,8 +195,8 @@ namespace GlassServer
             //0 = Off
             //1 = TO
             //2 = FROM
-            Add(b.Name("NAV TOFROM:1"));
-            Add(b.Name("NAV TOFROM:2"));
+            Add(b.Name("NAV TOFROM:1").ReadOnly().Enum((0, "Off"), (1, "To"), (2, "From")));
+            Add(b.Name("NAV TOFROM:2").ReadOnly().Enum((0, "Off"), (1, "To"), (2, "From")));
 
 
             Console.WriteLine("Populated definitions!");
