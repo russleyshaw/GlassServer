@@ -15,13 +15,39 @@ Find the latest release [here](https://github.com/russleyshaw/GlassServer/releas
 ### Getting SimData
 Request
 ```ts
-// GET https://{HOST}/api/simdata/?name=PLANE%20LATITUDE&name=PLANE%20LONGITUDE
+// GET https://localhost:5001/api/simdata/?name=ENGINE%20TYPE&name=SURFACE%20TYPE
+```
+
+Response 200 OK
+```
+[
+  {
+    "name": "ENGINE TYPE",
+    "units": "Enum",
+    "value": 0,
+    "text": "Piston"
+  },
+  {
+    "name": "SURFACE TYPE",
+    "units": "Enum",
+    "value": 4,
+    "text": "Asphalt"
+  }
+]
 ```
 
 ### Setting SimData
 ```ts
-// POST https://{host}/api/simdata
-// BODY
-[ {"name": "LIGHT TAXI", "value": 0} ]
+// POST https://localhost:5001/api/simdata
+[
+  {"name": "LIGHT TAXI", "value": 0}
+]
 ```
+Response 200 OK
 
+### Sending an event
+```
+// POST https://localhost:5001/api/simevent/
+[
+	{"name": "PARKING_BRAKES", "value": 0}
+]
