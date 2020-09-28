@@ -10,6 +10,10 @@ Find the latest release [here](https://github.com/russleyshaw/GlassServer/releas
 
 - Copy the `{MSFS SDK}/SimConnect SDK` folder to the repo root.
 
+# Definitions
+[Sim Events](https://github.com/russleyshaw/GlassServer/blob/fbaec860ab9d67d6c2efd41c5fde4d6d09db600f/GlassServer/SimManager.cs#L370)
+[Sim Data](https://github.com/russleyshaw/GlassServer/blob/fbaec860ab9d67d6c2efd41c5fde4d6d09db600f/GlassServer/SimManager.cs#L155)
+
 # API
 
 ### Getting SimData
@@ -51,3 +55,4 @@ Response 200 OK
 [
 	{"name": "PARKING_BRAKES", "value": 0}
 ]
+```
