@@ -42,8 +42,6 @@ namespace GlassServer
                 app.UseHsts();
             }
 
-            SimManager.Connect();
-
             app.UseRouting();
 
             app.UseCors();
