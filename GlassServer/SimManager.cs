@@ -139,10 +139,6 @@ namespace GlassServer
                 Add(b.Name(string.Format("THROTTLE{0}_SET", engId))); // 0 to 16383
             }
 
-
-
-
-
             Console.WriteLine("Populated event definitions!");
 
             static void Add(SimEventDefBuilder _builder)
@@ -186,15 +182,16 @@ namespace GlassServer
             Add(b.Name("GEAR HANDLE POSITION"));
             Add(b.Name("BRAKE PARKING POSITION").ReadOnly()); // Actually wants to be a position 32k but bool is easier to understand.
 
-            Add(b.Name("GENERAL ENG COMBUSTION:1"));
-            Add(b.Name("GENERAL ENG COMBUSTION:2"));
-            Add(b.Name("GENERAL ENG COMBUSTION:3"));
-            Add(b.Name("GENERAL ENG COMBUSTION:4"));
+            for(var i = 1; i <= 4; i++)
+            {
+                Add(b.Name(string.Format("GENERAL ENG COMBUSTION:{0}", i)));
+                Add(b.Name(string.Format("GENERAL ENG MASTER ALTERNATOR:{0}", i)));
+                Add(b.Name(string.Format("GENERAL ENG FUEL PUMP SWITCH:{0}", i)));
+                Add(b.Name(string.Format("GENERAL ENG OIL PRESSURE:{0}", i)));
+                Add(b.Name(string.Format("GENERAL ENG OIL TEMPERATURE:{0}", i)));
+            }
 
-            Add(b.Name("GENERAL ENG MASTER ALTERNATOR:1"));
-            Add(b.Name("GENERAL ENG MASTER ALTERNATOR:2"));
-            Add(b.Name("GENERAL ENG MASTER ALTERNATOR:3"));
-            Add(b.Name("GENERAL ENG MASTER ALTERNATOR:4"));
+
 
             Add(b.Name("COM TRANSMIT:1"));
             Add(b.Name("COM TRANSMIT:2"));
@@ -207,6 +204,10 @@ namespace GlassServer
 
             Add(b.Name("SIM ON GROUND").ReadOnly());
 
+            // Percent
+            b = b.Units("percent");
+            Add(b.Name("AILERON TRIM PCT"));
+            Add(b.Name("ELEVATOR TRIM PCT"));
 
             // Knots
             b = b.Units("boolean");
@@ -227,10 +228,15 @@ namespace GlassServer
 
             // RPM
             b = b.Units("rpm");
-            Add(b.Name("GENERAL ENG RPM:1"));
-            Add(b.Name("GENERAL ENG RPM:2"));
-            Add(b.Name("GENERAL ENG RPM:3"));
-            Add(b.Name("GENERAL ENG RPM:4"));
+            for(var i = 1; i <= 4; i++)
+            {
+                Add(b.Name(string.Format("GENERAL ENG RPM:{0}", i)).ReadOnly());
+            }
+
+            for(var i = 0; i <= 3; i++)
+            {
+                Add(b.Name(string.Format("WHEEL RPM:{0}", i)).ReadOnly());
+            }
 
             // Frequency BCD16
             b = b.Units("frequency bcd16");
@@ -261,6 +267,13 @@ namespace GlassServer
             Add(b.Name("NAV RADIAL:2"));
             Add(b.Name("NAV RADIAL ERROR:1"));
             Add(b.Name("NAV RADIAL ERROR:2"));
+
+            Add(b.Name("AILERON TRIM"));
+            Add(b.Name("RUDDER TRIM"));
+
+            // Radians
+            b = b.Units("radians");
+            Add(b.Name("ELEVATOR TRIM POSITION"));
 
 
             // Temperature
