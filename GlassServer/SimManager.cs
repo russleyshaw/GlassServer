@@ -182,12 +182,12 @@ namespace GlassServer
             Add(b.Name("GEAR HANDLE POSITION"));
             Add(b.Name("BRAKE PARKING POSITION").ReadOnly()); // Actually wants to be a position 32k but bool is easier to understand.
 
-            for(var i = 1; i <= 4; i++)
+            for (var i = 1; i <= 4; i++)
             {
                 Add(b.Name(string.Format("GENERAL ENG COMBUSTION:{0}", i)));
                 Add(b.Name(string.Format("GENERAL ENG MASTER ALTERNATOR:{0}", i)));
                 Add(b.Name(string.Format("GENERAL ENG FUEL PUMP SWITCH:{0}", i)));
-                Add(b.Name(string.Format("GENERAL ENG OIL PRESSURE:{0}", i)));
+
                 Add(b.Name(string.Format("GENERAL ENG OIL TEMPERATURE:{0}", i)));
             }
 
@@ -208,6 +208,21 @@ namespace GlassServer
             b = b.Units("percent");
             Add(b.Name("AILERON TRIM PCT"));
             Add(b.Name("ELEVATOR TRIM PCT"));
+            for (var i = 1; i <= 4; i++)
+            {
+                Add(b.Name(string.Format("GENERAL ENG THROTTLE LEVER POSITION:{0}", i)).ReadOnly());
+                Add(b.Name(string.Format("GENERAL ENG MIXTURE LEVER POSITION:{0}", i)).ReadOnly());
+                Add(b.Name(string.Format("GENERAL ENG THROTTLE LEVER POSITION:{0}", i)).ReadOnly());
+                Add(b.Name(string.Format("GENERAL ENG PCT MAX RPM:{0}", i)).ReadOnly());
+            }
+
+            string[] tanks = { "CENTER", "CENTER2", "CENTER3", "LEFT MAIN", "LEFT AUX", "LEFT TIP", "RIGHT MAIN", "RIGHT AUX", "RIGHT TIP", "EXTERNAL1", "EXTERNAL2" };
+            foreach (var tank in tanks)
+            {
+                Add(b.Name(string.Format("FUEL TANK {0} LEVEL", tank)).ReadOnly());
+                Add(b.Name(string.Format("FUEL TANK {0} CAPACITY", tank)).ReadOnly());
+                Add(b.Name(string.Format("FUEL TANK {0} CAPACITY", tank)).ReadOnly());
+            }
 
             // Knots
             b = b.Units("boolean");
@@ -226,14 +241,22 @@ namespace GlassServer
             Add(b.Name("RADIO HEIGHT").ReadOnly());
             Add(b.Name("AUTOPILOT ALTITUDE LOCK VAR"));
 
-            // RPM
-            b = b.Units("rpm");
-            for(var i = 1; i <= 4; i++)
+            // psf
+            b = b.Units("fsp");
+            for (var i = 1; i <= 4; i++)
             {
-                Add(b.Name(string.Format("GENERAL ENG RPM:{0}", i)).ReadOnly());
+                Add(b.Name(string.Format("GENERAL ENG OIL PRESSURE:{0}", i)));
             }
 
-            for(var i = 0; i <= 3; i++)
+            // RPM
+            b = b.Units("rpm");
+            for (var i = 1; i <= 4; i++)
+            {
+                Add(b.Name(string.Format("GENERAL ENG RPM:{0}", i)).ReadOnly());
+                Add(b.Name(string.Format("ENG MAX RPM:{0}", i)).ReadOnly());
+            }
+
+            for (var i = 0; i <= 3; i++)
             {
                 Add(b.Name(string.Format("WHEEL RPM:{0}", i)).ReadOnly());
             }
@@ -256,6 +279,11 @@ namespace GlassServer
             b = b.Units("degrees");
             Add(b.Name("PLANE LATITUDE").ReadOnly());
             Add(b.Name("PLANE LONGITUDE").ReadOnly());
+
+            Add(b.Name("GPS WP NEXT LAT").ReadOnly());
+            Add(b.Name("GPS WP NEXT LON").ReadOnly());
+            Add(b.Name("GPS WP PREV LAT").ReadOnly());
+            Add(b.Name("GPS WP PREV LAT").ReadOnly());
 
             Add(b.Name("AMBIENT WIND DIRECTION").ReadOnly());
             Add(b.Name("AUTOPILOT HEADING LOCK DIR").ReadOnly());
@@ -330,13 +358,50 @@ namespace GlassServer
             Add(b.Name("NAV TOFROM:1").ReadOnly().Enum((0, "Off"), (1, "To"), (2, "From")));
             Add(b.Name("NAV TOFROM:2").ReadOnly().Enum((0, "Off"), (1, "To"), (2, "From")));
 
+            Add(b.Name("GPS APPROACH MODE").ReadOnly().Enum(
+                (0, "None"),
+                (1, "Transition"),
+                (2, "Final"),
+                (3, "Missed")
+            ));
+
+            Add(b.Name("GPS APPROACH WP TYPE").ReadOnly().Enum(
+                (0, "None"),
+                (1, "Fix"),
+                (2, "Procedure Turn Left"),
+                (3, "Procedure Turn Right"),
+                (4, "DME ARC Left"),
+                (5, "DME ARC Right"),
+                (6, "Holding Left"),
+                (7, "Holding Right"),
+                (8, "Distance"),
+                (9, "Altitude"),
+                (10, "Manual Mequence"),
+                (11, "Vector To Final")
+            ));
+
+            Add(b.Name("GPS APPROACH WP TYPE").ReadOnly().Enum(
+                (0, "None"),
+                (1, "GPS"),
+                (2, "VOR"),
+                (3, "NDB"),
+                (4, "ILS"),
+                (5, "Localizer"),
+                (6, "SDF"),
+                (7, "LDA"),
+                (8, "VOR/DME"),
+                (9, "NDB/DME"),
+                (10, "RNAV"),
+                (11, "Backcourse")
+            ));
+
 
             Console.WriteLine("Populated data definitions!");
 
             static void Add(SimDataDefBuilder _builder)
             {
                 var def = _builder.Build();
-                m_dataDefinitions.Add(def.name, def);
+                m_dataDefinitions.TryAdd(def.name, def);
             }
 
         }
@@ -383,9 +448,15 @@ namespace GlassServer
                 Console.WriteLine("Waiting to connect...");
                 await Task.Delay(1000);
             }
-
-            PopulateDataDefinitions();
-            PopulateEventDefinitions();
+            try
+            {
+                PopulateDataDefinitions();
+                PopulateEventDefinitions();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to populate.");
+            }
 
             foreach (var def in m_dataDefinitions.Values)
             {
@@ -630,7 +701,7 @@ namespace GlassServer
         private static void SimConnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
         {
             SIMCONNECT_EXCEPTION eException = (SIMCONNECT_EXCEPTION)data.dwException;
-            
+
             Console.WriteLine("SimConnect_OnRecvException: ID {0}, SendID {1} " + eException.ToString(), data.dwID, data.dwSendID);
         }
     }
