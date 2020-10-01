@@ -56,13 +56,23 @@ namespace GlassServer
             Add(b.Name("FLAPS_3"));
             Add(b.Name("FLAPS_DOWN"));
 
+            Add(b.Name("TOGGLE_AVIONICS_MASTER"));
             Add(b.Name("AP_MASTER"));
             Add(b.Name("YAW_DAMPER_TOGGLE"));
             Add(b.Name("AP_PANEL_HEADING_HOLD"));
+            Add(b.Name("AP_PANEL_ALTITUDE_HOLD"));
             Add(b.Name("TOGGLE_FLIGHT_DIRECTOR"));
-            Add(b.Name("HEADING_BUG_SET")); // degrees
-            Add(b.Name("TOGGLE_AVIONICS_MASTER"));
+            Add(b.Name("SYNC_FLIGHT_DIRECTOR_PITCH"));
+            Add(b.Name("AP_HDG_HOLD"));
+            Add(b.Name("AP_ALT_HOLD"));
+            Add(b.Name("AP_ATT_HOLD"));
+            Add(b.Name("AP_NAV1_HOLD"));
+            Add(b.Name("AP_ALT_VAR_SET_ENGLISH"));
+            Add(b.Name("AP_VS_VAR_SET_ENGLISH"));
 
+
+
+            Add(b.Name("HEADING_BUG_SET")); // degrees
             Add(b.Name("REQUEST_FUEL_KEY"));
 
 
@@ -144,7 +154,8 @@ namespace GlassServer
             static void Add(SimEventDefBuilder _builder)
             {
                 var def = _builder.Build();
-                m_eventDefinitions.Add(def.name, def);
+                try { m_eventDefinitions.Add(def.name, def); }
+                catch { Console.WriteLine("Failed to add definition for event {0}", def.name); }
             }
         }
 
@@ -156,6 +167,8 @@ namespace GlassServer
             // https://docs.microsoft.com/en-us/previous-versions/microsoft-esp/cc526981(v=msdn.10)
 
             var b = new SimDataDefBuilder();
+
+            string[] tanks = { "CENTER", "CENTER2", "CENTER3", "LEFT MAIN", "LEFT AUX", "LEFT TIP", "RIGHT MAIN", "RIGHT AUX", "RIGHT TIP", "EXTERNAL1", "EXTERNAL2" };
 
             // Booleans
             b = b.Units("boolean");
@@ -187,8 +200,6 @@ namespace GlassServer
                 Add(b.Name(string.Format("GENERAL ENG COMBUSTION:{0}", i)));
                 Add(b.Name(string.Format("GENERAL ENG MASTER ALTERNATOR:{0}", i)));
                 Add(b.Name(string.Format("GENERAL ENG FUEL PUMP SWITCH:{0}", i)));
-
-                Add(b.Name(string.Format("GENERAL ENG OIL TEMPERATURE:{0}", i)));
             }
 
 
@@ -212,20 +223,26 @@ namespace GlassServer
             {
                 Add(b.Name(string.Format("GENERAL ENG THROTTLE LEVER POSITION:{0}", i)).ReadOnly());
                 Add(b.Name(string.Format("GENERAL ENG MIXTURE LEVER POSITION:{0}", i)).ReadOnly());
-                Add(b.Name(string.Format("GENERAL ENG THROTTLE LEVER POSITION:{0}", i)).ReadOnly());
+                Add(b.Name(string.Format("GENERAL ENG PROPELLER LEVER POSITION:{0}", i)).ReadOnly());
                 Add(b.Name(string.Format("GENERAL ENG PCT MAX RPM:{0}", i)).ReadOnly());
             }
 
-            string[] tanks = { "CENTER", "CENTER2", "CENTER3", "LEFT MAIN", "LEFT AUX", "LEFT TIP", "RIGHT MAIN", "RIGHT AUX", "RIGHT TIP", "EXTERNAL1", "EXTERNAL2" };
             foreach (var tank in tanks)
             {
                 Add(b.Name(string.Format("FUEL TANK {0} LEVEL", tank)).ReadOnly());
+            }
+
+            // Gallons
+            b = b.Units("gallons");
+            foreach (var tank in tanks)
+            {
+
                 Add(b.Name(string.Format("FUEL TANK {0} CAPACITY", tank)).ReadOnly());
-                Add(b.Name(string.Format("FUEL TANK {0} CAPACITY", tank)).ReadOnly());
+                Add(b.Name(string.Format("FUEL TANK {0} QUANTITY", tank)).ReadOnly());
             }
 
             // Knots
-            b = b.Units("boolean");
+            b = b.Units("knots");
             Add(b.Name("AMBIENT WIND VELOCITY").ReadOnly());
 
             // feet/sec
@@ -283,7 +300,7 @@ namespace GlassServer
             Add(b.Name("GPS WP NEXT LAT").ReadOnly());
             Add(b.Name("GPS WP NEXT LON").ReadOnly());
             Add(b.Name("GPS WP PREV LAT").ReadOnly());
-            Add(b.Name("GPS WP PREV LAT").ReadOnly());
+            Add(b.Name("GPS WP PREV LON").ReadOnly());
 
             Add(b.Name("AMBIENT WIND DIRECTION").ReadOnly());
             Add(b.Name("AUTOPILOT HEADING LOCK DIR").ReadOnly());
@@ -307,6 +324,10 @@ namespace GlassServer
             // Temperature
             b = b.Units("celsius");
             Add(b.Name("AMBIENT TEMPERATURE").ReadOnly());
+            for(var i = 1; i <= 4; i++)
+            {
+                Add(b.Name(string.Format("GENERAL ENG OIL TEMPERATURE:{0}", i)));
+            }
 
             // Number/Count
             b = b.Units("number");
@@ -380,7 +401,7 @@ namespace GlassServer
                 (11, "Vector To Final")
             ));
 
-            Add(b.Name("GPS APPROACH WP TYPE").ReadOnly().Enum(
+            Add(b.Name("GPS APPROACH APPROACH TYPE").ReadOnly().Enum(
                 (0, "None"),
                 (1, "GPS"),
                 (2, "VOR"),
@@ -395,13 +416,21 @@ namespace GlassServer
                 (11, "Backcourse")
             ));
 
+            b = b.Units("Mask");
+            for (var i = 0; i <= 10; i++)
+            {
+                Add(b.Name(string.Format("TURB ENG TANKS USED:{0}", i)).ReadOnly());
+                Add(b.Name(string.Format("RECIP ENG FUEL TANKS USED:{0}", i)).ReadOnly());
+            }
+
 
             Console.WriteLine("Populated data definitions!");
 
             static void Add(SimDataDefBuilder _builder)
             {
                 var def = _builder.Build();
-                m_dataDefinitions.TryAdd(def.name, def);
+                try { m_dataDefinitions.Add(def.name, def); }
+                catch { Console.WriteLine("Failed to add definition for variable {0}", def.name); }
             }
 
         }
