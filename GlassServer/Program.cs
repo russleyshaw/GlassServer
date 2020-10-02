@@ -21,7 +21,7 @@ namespace GlassServer
             httpThread.Start();
 
             var sockServer = new SocketServer();
-            sockServer.Start();
+            sockServer.Start("ws://0.0.0.0:8888");
 
             Console.WriteLine("Running! Press any key to exit.");
             Console.ReadKey(true);

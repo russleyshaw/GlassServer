@@ -20,9 +20,9 @@ namespace GlassServer
     public class SocketServer
     {
         WebSocketServer m_server;
-        public void Start()
+        public void Start(string sBaseUrl)
         {
-            m_server = new WebSocketServer("ws://localhost:8888");
+            m_server = new WebSocketServer(sBaseUrl);
             m_server.AddWebSocketService<SimBehavior>("/sim");
             m_server.Start();
         }
