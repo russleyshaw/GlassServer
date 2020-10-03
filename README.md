@@ -2,7 +2,9 @@
 
 Server to provide simple access to MSFS 2020 via SimConnect.
 
-# Releases
+# Running
+
+You will need .NET Core 3.1 installed. This can be downloaded from [here](https://dotnet.microsoft.com/download/dotnet-core/3.1).
 
 Find the latest release [here](https://github.com/russleyshaw/GlassServer/releases)
 
