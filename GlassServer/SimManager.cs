@@ -205,6 +205,10 @@ namespace GlassServer
             Add(b.Name("IS GEAR RETRACTABLE"));
             Add(b.Name("GEAR HANDLE POSITION"));
             Add(b.Name("BRAKE PARKING POSITION").ReadOnly()); // Actually wants to be a position 32k but bool is easier to understand.
+            Add(b.Name("PITOT HEAT").ReadOnly());
+
+            Add(b.Name("STALL WARNING").ReadOnly());
+            Add(b.Name("OVERSPEED WARNING").ReadOnly());
 
             for (var i = 1; i <= 4; i++)
             {
@@ -255,6 +259,9 @@ namespace GlassServer
             // Knots
             b = b.Units("knots");
             Add(b.Name("AMBIENT WIND VELOCITY").ReadOnly());
+            Add(b.Name("AIRSPEED TRUE").ReadOnly());
+            Add(b.Name("AIRSPEED INDICATED").ReadOnly());
+            Add(b.Name("AIRSPEED BARBER POLE").ReadOnly());
 
             // feet/sec
             b = b.Units("feet per second");
@@ -267,6 +274,9 @@ namespace GlassServer
             // feet
             b = b.Units("feet");
             Add(b.Name("RADIO HEIGHT").ReadOnly());
+            Add(b.Name("PLANE ALTITUDE").ReadOnly());
+            Add(b.Name("PLANE ALT ABOVE GROUND").ReadOnly());
+            Add(b.Name("GROUND ALTITUDE").ReadOnly());
             Add(b.Name("AUTOPILOT ALTITUDE LOCK VAR"));
 
             // psf
