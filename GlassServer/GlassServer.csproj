@@ -7,6 +7,10 @@
     <Company />
     <StartupObject>GlassServer.Program</StartupObject>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <RepositoryUrl>https://github.com/russleyshaw/GlassServer</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/russleyshaw/GlassServer</PackageProjectUrl>
+    <Copyright>Russley Shaw 2020</Copyright>
+    <UserSecretsId>bd0a611f-3958-4c15-a971-e6248ae78b09</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

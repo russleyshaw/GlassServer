@@ -86,6 +86,17 @@ namespace GlassServer
             Add(b.Name("AP_VS_VAR_INC"));
             Add(b.Name("AP_VS_VAR_DEC"));
 
+            // LIGHTS
+            Add(b.Name("STROBES_TOGGLE"));
+            Add(b.Name("PANEL_LIGHTS_TOGGLE"));
+            Add(b.Name("LANDING_LIGHTS_TOGGLE"));
+            Add(b.Name("TOGGLE_BEACON_LIGHTS"));
+            Add(b.Name("TOGGLE_TAXI_LIGHTS"));
+            Add(b.Name("TOGGLE_LOGO_LIGHTS"));
+            Add(b.Name("TOGGLE_WING_LIGHTS"));
+            Add(b.Name("TOGGLE_NAV_LIGHTS"));
+            Add(b.Name("TOGGLE_CABIN_LIGHTS"));
+
             Add(b.Name("BAROMETRIC"));
 
             Add(b.Name("COM_RECEIVE_ALL_TOGGLE"));
