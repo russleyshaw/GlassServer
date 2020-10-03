@@ -55,6 +55,10 @@ namespace GlassServer
             Add(b.Name("FLAPS_2"));
             Add(b.Name("FLAPS_3"));
             Add(b.Name("FLAPS_DOWN"));
+            Add(b.Name("FLAPS_SET"));
+
+            // Trimming
+            Add(b.Name("AXIS_ELEV_TRIM_SET"));
 
             Add(b.Name("TOGGLE_AVIONICS_MASTER"));
             Add(b.Name("AP_MASTER"));
@@ -66,6 +70,8 @@ namespace GlassServer
             Add(b.Name("AP_HDG_HOLD"));
             Add(b.Name("AP_ALT_HOLD"));
             Add(b.Name("AP_ATT_HOLD"));
+            Add(b.Name("AP_AIRSPEED_HOLD"));
+            Add(b.Name("AP_SPD_VAR_SET"));
             Add(b.Name("AP_NAV1_HOLD"));
             Add(b.Name("AP_ALT_VAR_SET_ENGLISH"));
             Add(b.Name("AP_VS_VAR_SET_ENGLISH"));
@@ -200,6 +206,7 @@ namespace GlassServer
             Add(b.Name("AUTOPILOT ALTITUDE LOCK"));
             Add(b.Name("AUTOPILOT ATTITUDE HOLD"));
             Add(b.Name("AUTOPILOT VERTICAL HOLD"));
+            Add(b.Name("AUTOPILOT AIRSPEED HOLD"));
             Add(b.Name("AUTOPILOT FLIGHT DIRECTOR ACTIVE"));
 
             Add(b.Name("IS GEAR RETRACTABLE"));
@@ -209,6 +216,7 @@ namespace GlassServer
 
             Add(b.Name("STALL WARNING").ReadOnly());
             Add(b.Name("OVERSPEED WARNING").ReadOnly());
+            
 
             for (var i = 1; i <= 4; i++)
             {
@@ -228,12 +236,15 @@ namespace GlassServer
             Add(b.Name("NAV HAS NAV:1"));
             Add(b.Name("NAV HAS NAV:2"));
 
+            Add(b.Name("FLAPS AVAILABLE").ReadOnly());
             Add(b.Name("SIM ON GROUND").ReadOnly());
 
             // Percent
             b = b.Units("percent");
             Add(b.Name("AILERON TRIM PCT"));
+            Add(b.Name("RUDDER TRIM PCT"));
             Add(b.Name("ELEVATOR TRIM PCT"));
+            Add(b.Name("FLAPS HANDLE PERCENT").ReadOnly());
             for (var i = 1; i <= 4; i++)
             {
                 Add(b.Name(string.Format("GENERAL ENG THROTTLE LEVER POSITION:{0}", i)).ReadOnly());
@@ -262,6 +273,7 @@ namespace GlassServer
             Add(b.Name("AIRSPEED TRUE").ReadOnly());
             Add(b.Name("AIRSPEED INDICATED").ReadOnly());
             Add(b.Name("AIRSPEED BARBER POLE").ReadOnly());
+            Add(b.Name("AUTOPILOT AIRSPEED HOLD VAR"));
 
             // feet/sec
             b = b.Units("feet per second");
@@ -358,6 +370,9 @@ namespace GlassServer
             Add(b.Name("NAV SIGNAL:2"));
             Add(b.Name("NAV CDI:1"));
             Add(b.Name("NAV CDI:2"));
+
+            Add(b.Name("FLAPS NUM HANDLE POSITIONS").ReadOnly());
+            Add(b.Name("FLAPS HANDLE INDEX"));
 
             // Enum
             b = b.Units("Enum");
