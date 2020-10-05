@@ -2,6 +2,8 @@
 
 Server to provide simple access to MSFS 2020 via SimConnect.
 
+[Discord](https://discord.gg/FxhNu2d)
+
 # Running
 
 You will need .NET Core 3.1 installed. This can be downloaded from [here](https://dotnet.microsoft.com/download/dotnet-core/3.1).
