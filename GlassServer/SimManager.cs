@@ -105,33 +105,21 @@ namespace GlassServer
 
             Add(b.Name("BAROMETRIC"));
 
-            Add(b.Name("COM_RECEIVE_ALL_TOGGLE"));
-            Add(b.Name("COM_RADIO_WHOLE_DEC")); // Decrements COM by one MHz
-            Add(b.Name("COM_RADIO_WHOLE_INC")); // Increments COM by one MHz
-            Add(b.Name("COM_RADIO_FRACT_DEC")); // Decrements COM by 25 KHz
-            Add(b.Name("COM_RADIO_FRACT_INC")); // Increments COM by 25 KHz
+            Add(b.Name("NAV1_RADIO_SET"));
+            Add(b.Name("NAV1_STBY_SET"));
+            Add(b.Name("NAV1_RADIO_SWAP"));
+            Add(b.Name("NAV2_RADIO_SET"));
+            Add(b.Name("NAV2_STBY_SET"));
+            Add(b.Name("NAV2_RADIO_SWAP"));
 
-            foreach (var navId in new[] { 1, 2 })
-            {
-                foreach (var dir in new[] { "INC", "DEC " })
-                {
-                    foreach (var amount in new[] { "FRACT", "WHOLE" })
-                    {
-                        Add(b.Name(string.Format("NAV{0}_RADIO_{1}_{2}", navId, amount, dir)));
-                    }
+            Add(b.Name("COM_RADIO_SET")); // Sets COM frequency (BCD Hz)
+            Add(b.Name("COM_STBY_RADIO_SET")); // Sets COM 1 standby frequency (BCD Hz)
+            Add(b.Name("COM_STBY_RADIO_SWAP")); // Swaps COM 1 frequency with standby
 
-                    Add(b.Name(string.Format("VOR{0}_OBI_{1}", navId, dir)));
-                }
-
-                Add(b.Name(string.Format("NAV{0}_RADIO_SET", navId)));
-                Add(b.Name(string.Format("NAV{0}_STBY_SET", navId)));
-                Add(b.Name(string.Format("NAV{0}_RADIO_SWAP", navId)));
-
-                Add(b.Name(string.Format("COM{0}_TRANSMIT_SELECT", navId)));
-
-                Add(b.Name(string.Format("VOR{0}_SET", navId)));
-                Add(b.Name(string.Format("DME{0}_TOGGLE", navId)));
-            }
+            
+            Add(b.Name("COM2_RADIO_SET")); //  	Sets COM 2 frequency (BCD Hz)
+            Add(b.Name("COM2_STBY_RADIO_SET")); // Sets COM 2 standby frequency (BCD Hz)
+            Add(b.Name("COM2_RADIO_SWAP")); //  Swaps COM 2 frequency with standby
 
 
             Add(b.Name("THROTTLE_FULL"));
