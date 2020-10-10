@@ -233,6 +233,8 @@ namespace GlassServer
             Add(b.Name("RUDDER TRIM PCT"));
             Add(b.Name("ELEVATOR TRIM PCT"));
             Add(b.Name("FLAPS HANDLE PERCENT").ReadOnly());
+            Add(b.Name("GEAR TOTAL PCT EXTENDED").ReadOnly());
+
             for (var i = 1; i <= 4; i++)
             {
                 Add(b.Name(string.Format("GENERAL ENG THROTTLE LEVER POSITION:{0}", i)).ReadOnly());
@@ -265,10 +267,12 @@ namespace GlassServer
 
             // feet/sec
             b = b.Units("feet per second");
-            Add(b.Name("VERTICAL SPEED").ReadOnly());
+
+            Add(b.Name("SURFACE RELATIVE GROUND SPEED").ReadOnly());
 
             // feet per minute
             b = b.Units("feet per minute");
+            Add(b.Name("VERTICAL SPEED").ReadOnly());
             Add(b.Name("AUTOPILOT VERTICAL HOLD VAR").ReadOnly());
 
             // feet
