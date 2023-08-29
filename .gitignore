@@ -1,0 +1,15 @@
+bin/
+obj/
+
+tmp/
+*.tmp
+
+node_modules/
+*.log
+
+Build/
+
+
+SimConnect.lib
+SimConnect.dll
+Microsoft.FlightSimulator.SimConnect.dll

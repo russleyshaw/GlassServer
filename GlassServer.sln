@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34009.444
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlassServerLib", "GlassServerLib\GlassServerLib.csproj", "{C14746BC-F306-4E24-879A-0CFE2E239EA9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "Sandbox\Sandbox.csproj", "{B7B96715-3119-4E6A-8DEE-00E7AF2D2BC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlassServer", "GlassServer\GlassServer.csproj", "{B1FB87C8-688C-4F11-B31E-579D26BED54A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C14746BC-F306-4E24-879A-0CFE2E239EA9}.Debug|x64.ActiveCfg = Debug|x64
+		{C14746BC-F306-4E24-879A-0CFE2E239EA9}.Debug|x64.Build.0 = Debug|x64
+		{C14746BC-F306-4E24-879A-0CFE2E239EA9}.Release|x64.ActiveCfg = Release|x64
+		{B7B96715-3119-4E6A-8DEE-00E7AF2D2BC3}.Debug|x64.ActiveCfg = Debug|x64
+		{B7B96715-3119-4E6A-8DEE-00E7AF2D2BC3}.Debug|x64.Build.0 = Debug|x64
+		{B7B96715-3119-4E6A-8DEE-00E7AF2D2BC3}.Release|x64.ActiveCfg = Release|x64
+		{B1FB87C8-688C-4F11-B31E-579D26BED54A}.Debug|x64.ActiveCfg = Debug|x64
+		{B1FB87C8-688C-4F11-B31E-579D26BED54A}.Debug|x64.Build.0 = Debug|x64
+		{B1FB87C8-688C-4F11-B31E-579D26BED54A}.Release|x64.ActiveCfg = Release|Any CPU
+		{B1FB87C8-688C-4F11-B31E-579D26BED54A}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D7DE9412-1B34-4B38-9833-6D4CEDC075F3}
+	EndGlobalSection
+EndGlobal
