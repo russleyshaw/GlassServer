@@ -1,5 +1,6 @@
 bin/
 obj/
+dist/
 
 tmp/
 *.tmp
@@ -13,3 +14,7 @@ Build/
 SimConnect.lib
 SimConnect.dll
 Microsoft.FlightSimulator.SimConnect.dll
+
+node_modules/
+.env
+.vs/

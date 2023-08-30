@@ -201,6 +201,7 @@ namespace GlassServerLib
             {
                 if (iRequest == (uint)oSimvarRequest.eRequest)
                 {
+                    var prevSValue = oSimvarRequest.sValue;
                     if (oSimvarRequest.bIsString)
                     {
                         Struct1 result = (Struct1)data.dwData[0];
@@ -211,11 +212,14 @@ namespace GlassServerLib
                     {
                         double dValue = (double)data.dwData[0];
                         oSimvarRequest.dValue = dValue;
-                        oSimvarRequest.sValue = dValue.ToString("F9");
+                        oSimvarRequest.sValue = dValue.ToString("F5");
                     }
                     Console.WriteLine(oSimvarRequest.sName + ": " + oSimvarRequest.sValue);
 
-                    OnSimVarUpdated?.Invoke(oSimvarRequest);
+                    if(prevSValue != oSimvarRequest.sValue)
+                    {
+                        OnSimVarUpdated?.Invoke(oSimvarRequest);
+                    }
                     oSimvarRequest.updateValue();
                 }
             }
