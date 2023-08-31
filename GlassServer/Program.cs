@@ -59,7 +59,7 @@ app.MapHub<GlassServerHub>("/hub", options =>
 
 simVarManager.OnSimVarUpdated = (simVar) =>
 {
-    GlassServerHub.client.SendAsync("UpdatedSimVar", simVar.sName, simVar.dValue, simVar.sName);
+    GlassServerHub.client.SendAsync("UpdatedSimVar", simVar.sName, simVar.dValue);
 };
 
 

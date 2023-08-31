@@ -11,8 +11,10 @@ export interface SimVarModelArgs {
 
 export class SimVarModel {
     readonly name: string;
-    sValue: string = "";
     dValue: number = 0;
+
+    isSendPending: boolean = false;
+
     readonly units: string;
 
     private manager: GlassServerManager;
@@ -29,8 +31,19 @@ export class SimVarModel {
         makeAutoObservable(this, {}, { autoBind: true });
     }
 
-    setValue(dValue: number, sValue: string) {
+    setValue(dValue: number) {
         this.dValue = dValue;
-        this.sValue = sValue;
+    }
+
+    receiveValue(dValue: number) {
+        this.isSendPending = false;
+        this.setValue(dValue);
+    }
+
+    sendValue(dValue: number) {
+        this.setValue(dValue);
+
+        this.isSendPending = true;
+        this.manager.sendSetSimVarMsg(this.name, dValue);
     }
 }

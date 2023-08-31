@@ -12,7 +12,7 @@ export class GlassServerManager {
     planeLatitude = new SimVarModel({
         name: "PLANE LATITUDE",
         units: "degrees",
-        intervalMs: 100,
+        intervalMs: 200,
 
         manager: this,
     });
@@ -20,7 +20,7 @@ export class GlassServerManager {
     planeLongitude = new SimVarModel({
         name: "PLANE LONGITUDE",
         units: "degrees",
-        intervalMs: 100,
+        intervalMs: 200,
 
         manager: this,
     });
@@ -86,11 +86,10 @@ export class GlassServerManager {
             })
             .build();
 
-        this.connection.on("updatedSimVar", (message: string, value: number, ...rest) => {
-            console.log("updatedSimVar", message, value, rest);
+        this.connection.on("UpdatedSimVar", (message: string, value: number) => {
             const model = this.getSimVar(message);
             if (model) {
-                model.setValue(value, value.toString());
+                model.receiveValue(value);
             }
         });
 
@@ -113,14 +112,20 @@ export class GlassServerManager {
 
     onConnected() {
         for (const model of this.addSimVarQueue) {
-            this.sendAddSimVarMsg(model.name, model.units, model.intervalMs, false);
+            this.sendAddSimVarMsg(model.name, model.units, model.intervalMs);
         }
     }
 
-    sendAddSimVarMsg(name: string, units: string, updateIntervalMs: number, isString: boolean) {
+    sendAddSimVarMsg(name: string, units: string, updateIntervalMs: number) {
         console.log(`Adding simvar ${name} (${units})`);
 
-        this.connection.send("addSimVar", name, units, updateIntervalMs, isString);
+        this.connection.send("addSimVar", name, units, updateIntervalMs);
+    }
+
+    sendSetSimVarMsg(name: string, value: number) {
+        console.log(`Setting simvar ${name} to ${value}`);
+
+        this.connection.send("setSimVar", name, value);
     }
 
     addSimVarModel(model: SimVarModel) {

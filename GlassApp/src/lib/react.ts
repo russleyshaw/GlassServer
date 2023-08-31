@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { delayMs } from "./async";
 
 /**
  * Delays the closing of a component by a specified amount of time.
@@ -62,4 +63,40 @@ export function useLocalStorageBool(key: string) {
     );
 
     return [value, setBoolValue] as const;
+}
+
+export function useAsyncIntervalMemo<T>(
+    callback: () => Promise<T>,
+    intervalMs: number,
+): { value: T | undefined; loading: boolean } {
+    const [value, setValue] = useState<T | undefined>();
+    const callbackRef = useRef(callback);
+    callbackRef.current = callback;
+
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let timeout: number;
+
+        async function doCallback() {
+            try {
+                const value = await callback();
+                setValue(value);
+            } catch (e) {
+                console.log(e);
+                await delayMs(intervalMs);
+            }
+            setLoading(false);
+
+            timeout = setTimeout(doCallback, intervalMs);
+        }
+
+        doCallback();
+
+        return () => {
+            clearTimeout(timeout);
+        };
+    }, [intervalMs]);
+
+    return { value, loading };
 }

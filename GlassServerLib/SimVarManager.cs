@@ -1,5 +1,6 @@
 ﻿using Microsoft.FlightSimulator.SimConnect;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -18,12 +19,6 @@ namespace GlassServerLib
             Struct1
         };
 
-        public enum COPY_ITEM
-        {
-            Name = 0,
-            Value,
-            Unit
-        }
 
         public class SimvarRequest
         {
@@ -31,9 +26,7 @@ namespace GlassServerLib
             public REQUEST eRequest = REQUEST.Dummy;
 
             public string sName = "";
-            public bool bIsString = false;
             public double dValue = 0.0;
-            public string sValue = null;
 
             public string sUnits;
 
@@ -72,19 +65,6 @@ namespace GlassServerLib
         public delegate void UpdatedSimVar(SimvarRequest simVar);
         public UpdatedSimVar? OnSimVarUpdated;
 
-
-        // String properties must be packed inside of a struct
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-        struct Struct1
-        {
-            // this is how you declare a fixed size string
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
-            public String sValue;
-
-            // other definitions can be added to this struct
-            // ...
-        };
-
         /// User-defined win32 event
         public const int WM_USER_SIMCONNECT = 0x0402;
 
@@ -97,7 +77,7 @@ namespace GlassServerLib
 
         /// SimConnect object
         private SimConnect m_oSimConnect = null;
-        public ObservableCollection<SimvarRequest> lSimvarRequests = new ObservableCollection<SimvarRequest>();
+        public List<SimvarRequest> lSimvarRequests = new List<SimvarRequest>();
 
         public void Connect()
         {
@@ -122,18 +102,21 @@ namespace GlassServerLib
 
                 /// Catch a simobject data request
                 m_oSimConnect.OnRecvSimobjectDataBytype += new SimConnect.RecvSimobjectDataBytypeEventHandler(SimConnect_OnRecvSimobjectDataBytype);
+
+                StartPolling();
             }
             catch (COMException ex)
             {
                 Console.WriteLine("Connection to KH failed: " + ex.Message);
             }
 
-            StartPolling();
         }
 
         public async Task StartPolling()
         {
-            while(true)
+            Console.WriteLine("Start Polling...");
+
+            while (true)
             {
                 SendRequests();
                 await Task.Delay(100);
@@ -168,6 +151,7 @@ namespace GlassServerLib
 
         private void SimConnect_OnRecvOpen(SimConnect sender, SIMCONNECT_RECV_OPEN data)
         {
+            Console.WriteLine("SimConnect Opened");
             // Register pending requests
             foreach (SimvarRequest oSimvarRequest in lSimvarRequests)
             {
@@ -201,22 +185,12 @@ namespace GlassServerLib
             {
                 if (iRequest == (uint)oSimvarRequest.eRequest)
                 {
-                    var prevSValue = oSimvarRequest.sValue;
-                    if (oSimvarRequest.bIsString)
-                    {
-                        Struct1 result = (Struct1)data.dwData[0];
-                        oSimvarRequest.dValue = 0;
-                        oSimvarRequest.sValue = result.sValue;
-                    }
-                    else
-                    {
-                        double dValue = (double)data.dwData[0];
-                        oSimvarRequest.dValue = dValue;
-                        oSimvarRequest.sValue = dValue.ToString("F5");
-                    }
-                    Console.WriteLine(oSimvarRequest.sName + ": " + oSimvarRequest.sValue);
+                    var prevValue = oSimvarRequest.dValue;
+                    var dValue = (double)data.dwData[0];
+                    oSimvarRequest.dValue = dValue;
 
-                    if(prevSValue != oSimvarRequest.sValue)
+
+                    if (prevValue != oSimvarRequest.dValue)
                     {
                         OnSimVarUpdated?.Invoke(oSimvarRequest);
                     }
@@ -228,44 +202,32 @@ namespace GlassServerLib
 
         private bool RegisterToSimConnect(SimvarRequest _oSimvarRequest)
         {
-            if (m_oSimConnect != null)
-            {
-                if (_oSimvarRequest.bIsString)
-                {
-                    /// Define a data structure containing string value
-                    m_oSimConnect.AddToDataDefinition(_oSimvarRequest.eDef, _oSimvarRequest.sName, "", SIMCONNECT_DATATYPE.STRING256, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-                    /// IMPORTANT: Register it with the simconnect managed wrapper marshaller
-                    /// If you skip this step, you will only receive a uint in the .dwData field.
-                    m_oSimConnect.RegisterDataDefineStruct<Struct1>(_oSimvarRequest.eDef);
-                }
-                else
-                {
-                    /// Define a data structure containing numerical value
-                    m_oSimConnect.AddToDataDefinition(_oSimvarRequest.eDef, _oSimvarRequest.sName, _oSimvarRequest.sUnits, SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-                    /// IMPORTANT: Register it with the simconnect managed wrapper marshaller
-                    /// If you skip this step, you will only receive a uint in the .dwData field.
-                    m_oSimConnect.RegisterDataDefineStruct<double>(_oSimvarRequest.eDef);
-                }
+            if (m_oSimConnect == null) return false;
 
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+
+            /// Define a data structure containing numerical value
+            m_oSimConnect.AddToDataDefinition(_oSimvarRequest.eDef, _oSimvarRequest.sName, _oSimvarRequest.sUnits, SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            /// IMPORTANT: Register it with the simconnect managed wrapper marshaller
+            /// If you skip this step, you will only receive a uint in the .dwData field.
+            m_oSimConnect.RegisterDataDefineStruct<double>(_oSimvarRequest.eDef);
+
+
+            return true;
+
         }
 
-        public void AddRequest(string _sNewSimvarRequest, string _sNewUnitRequest, uint updateIntervalMs, bool _bIsString)
+        public void AddRequest(string _sNewSimvarRequest, string _sNewUnitRequest, uint updateIntervalMs)
         {
+            Console.WriteLine($"Add Request({_sNewSimvarRequest}, {_sNewUnitRequest}, {updateIntervalMs})");
+
             SimvarRequest oSimvarRequest = new SimvarRequest
             {
                 eDef = (DEFINITION)m_iCurrentDefinition,
                 eRequest = (REQUEST)m_iCurrentRequest,
                 sName = _sNewSimvarRequest,
-                bIsString = _bIsString,
-                sUnits = _bIsString ? null : _sNewUnitRequest,
+                sUnits = _sNewUnitRequest,
                 dUpdateIntervalMs = updateIntervalMs,
-                
+
             };
 
             oSimvarRequest.bPending = !RegisterToSimConnect(oSimvarRequest);
@@ -284,7 +246,7 @@ namespace GlassServerLib
 
         public void SendRequests()
         {
-            
+
             foreach (SimvarRequest oSimvarRequest in lSimvarRequests)
             {
                 if (oSimvarRequest == null) continue;
@@ -294,6 +256,19 @@ namespace GlassServerLib
 
                 oSimvarRequest.bPending = true;
             }
+        }
+
+        public SimvarRequest? FindRequestByName(string sName)
+        {
+            return lSimvarRequests.Find(r => r.sName == sName);
+        }
+
+        public void SetValue(string sName, double dNewValue)
+        {
+            var oSimVarRequest = FindRequestByName(sName);
+            if (oSimVarRequest == null) return;
+
+            m_oSimConnect.SetDataOnSimObject(oSimVarRequest.eDef, SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_DATA_SET_FLAG.DEFAULT, dNewValue);
         }
     }
 }
